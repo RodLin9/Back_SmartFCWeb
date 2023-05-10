@@ -6,6 +6,7 @@ const { faker } =require('@faker-js/faker');
 const jwt = require('jsonwebtoken'); //jsonwebtoken para la autenticación basada en tokens 
 const bcrypt =require('bcryptjs'); //para la encriptación de contraseñas.
 const SECRET_KEY = 'secretkey1234' //clave secreta SECRET_KEY para el módulo jsonwebtoken que se utiliza para firmar y verificar tokens.
+
 /** @function createEstudiante */
 // Create the specific elements for authE in mongo. 
 
@@ -32,24 +33,25 @@ exports.createEstudianteFake = (req, res) => {
 
 exports.createEstudiante = async (req, res, next) => {
     const newEstudiante = {
-      id_estudiante: req.body.id_estudiante || "1",
-      tipo_usuario: req.body.tipo_usuario || "1",
-      nombre_estudiante: req.body.nombre_estudiante || "jhon",
-      apellido_estudiante: req.body.apellido_estudiante || "perez",/*,
+      id_estudiante: req.body.id_estudiante,
+      tipo_usuario: req.body.tipo_usuario,
+      nombre_estudiante: req.body.nombre_estudiante,
+      apellido_estudiante: req.body.apellido_estudiante,
       grado_estudiante: req.body.grado_estudiante,
       curso_estudiante: req.body.curso_estudiante,
       id_colegio: req.body.id_colegio,
       nombre_usuario: req.body.nombre_usuario,
       contrasena: req.body.contrasena,
-      correo_electronico: req.body.correo_electronico,*/
+      correo_electronico: req.body.correo_electronico,
     };
   
     try {
       const student = await Estudiante.create(newEstudiante);
+      console.log('Estudiante creado exitosamente:', student, ':)');
       res.send({ student });
     } catch (err) {
       res.status(500).send(`Server Error ${err}`);
-      error: 'No se ha podido registrar el estudiante'
+      error: 'No se ha podido registrar el estudiante :('
     }
   };
 /** @function loginEstudiante */

@@ -6,6 +6,7 @@ const dbConnect = async () => {
       await mongoose.connect(DB_URI, {
         useNewUrlParser: true, //objeto de opciones con varias opciones para configurar la conexión
         useUnifiedTopology: true,
+        autoIndex: true,
         keepAlive: true
       });
       console.log('**** CONEXION CORRECTA ****');

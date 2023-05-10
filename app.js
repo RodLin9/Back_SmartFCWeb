@@ -6,6 +6,7 @@ const express = require("express");
 const cors = require("cors"); 
 
 const estudianteRoutes = require('./Estudiantes/estudiante_routes');
+const materiaRoutes = require('./Materias/materia_routes');
 
 const dbConnect = require('./config/db')
 dbConnect()
@@ -50,7 +51,7 @@ app.use('/api', router);
 
 //app.use(estudianteRouters); //Use las rutas que están enviandose desde ese archivo
 estudianteRoutes(router);
-
+materiaRoutes(router);
 
 const port = process.env.PORT || 3002
 
