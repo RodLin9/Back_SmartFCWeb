@@ -40,7 +40,7 @@ exports.createEstudiante = async (req, res, next) => {
     grado_estudiante: req.body.grado_estudiante,
     curso_estudiante: req.body.curso_estudiante,
     id_colegio: req.body.id_colegio,
-    nombre_usuario: req.body.nombre_usuario,
+    //nombre_usuario: req.body.nombre_usuario,
     contrasena: req.body.contrasena,
     correo_electronico: req.body.correo_electronico,
   };
