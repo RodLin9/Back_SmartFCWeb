@@ -7,6 +7,10 @@ const cors = require("cors");
 
 const estudianteRoutes = require('./Estudiantes/estudiante_routes');
 const materiaRoutes = require('./Materias/materia_routes');
+const colegioRoutes = require('./School/school_routes');
+const dudaRoutes = require('./Dudas/dudas_routes');
+const gradoRoutes = require('./Grades/grades_routes');
+
 
 const dbConnect = require('./config/db')
 dbConnect()
@@ -30,7 +34,7 @@ const bodyParserURLEncode = bodyParser.urlencoded({extended:true});
 app.use(bodyParserJSON);
 app.use(bodyParserURLEncode);
 
-app.post('/subir', multipartMiddleware, (req, res) => {  
+/*app.post('/subir', multipartMiddleware, (req, res) => {  
   console.log(req.files.uploads[0].path);
   const urls = req.files.uploads[0].path;
   const numero = urls.lastIndexOf("/");
@@ -38,7 +42,7 @@ app.post('/subir', multipartMiddleware, (req, res) => {
   res.json({
       'url': `http://localhost:3000/public/repositorio/${lasturl}`
   });
-});
+});*/
 
 /**
  * Aquí invocamos a las rutas! 8) 
@@ -52,6 +56,9 @@ app.use('/api', router);
 //app.use(estudianteRouters); //Use las rutas que están enviandose desde ese archivo
 estudianteRoutes(router);
 materiaRoutes(router);
+colegioRoutes(router);
+dudaRoutes(router);
+gradoRoutes(router);
 
 const port = process.env.PORT || 3002
 
