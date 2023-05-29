@@ -11,7 +11,8 @@ exports.createSubject = async (req, res, next) => {
       nombre_materia: req.body.nombre_materia,
       id_colegio: req.body.id_colegio,
       id_areaMateria: req.body.id_areaMateria,
-      url_imagen: req.body.url_imagen,
+      //url_imagen: req.body.url_imagen,
+      avatar: faker.image.avatar(),
     };
   
     try {

@@ -10,6 +10,7 @@ const materiaRoutes = require('./Materias/materia_routes');
 const colegioRoutes = require('./School/school_routes');
 const dudaRoutes = require('./Dudas/dudas_routes');
 const gradoRoutes = require('./Grades/grades_routes');
+const actividadRoutes = require('./activities/activities_routes');
 
 
 const dbConnect = require('./config/db')
@@ -59,6 +60,7 @@ materiaRoutes(router);
 colegioRoutes(router);
 dudaRoutes(router);
 gradoRoutes(router);
+actividadRoutes(router);
 
 const port = process.env.PORT || 3002
 

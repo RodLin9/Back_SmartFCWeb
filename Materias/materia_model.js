@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-/*mongoose.set('useCreateIndex', true);
-mongoose.set('useUnifiedTopology', true);*/
 /** @function subjectSchema */
 // Schema in subject for model
 
@@ -40,6 +38,3 @@ const materiaSchema = new Schema({
 },{timestamps:true});
 
 module.exports = materiaSchema;
-//module.exports = mongoose.model('contents', contentSchema);
-//id_Materia	
-//nombre_Materia

@@ -12,5 +12,5 @@ materiaSchema.statics={
     }
 }
 
-const materiaModel = mongoose.model('Materias',materiaSchema);
+const materiaModel = mongoose.model('subjects',materiaSchema);
 module.exports = materiaModel;
