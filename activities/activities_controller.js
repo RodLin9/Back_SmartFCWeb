@@ -275,17 +275,17 @@ exports.loadURLvideo = async (req, res, next) => {
     }
   };
 
-exports.loadActivityByMateriaId = async (req, res, next) => {
+  exports.loadActivityByMateriaId = async (req, res, next) => {
     const activityData = {
-        id_materia: req.body.id_materia,
+        id_materiaActiva: req.body.id_materiaActiva,
     };
 
     try {
         const activity = await Activities.findOne({
-            id_materia: activityData.id_materia,
+            id_materiaActiva: activityData.id_materiaActiva,
         });
 
-        if (!activity) {
+        if (!activity) {    
             return res.status(409).send({ message: "No se encontró la actividad" });
         }
 
