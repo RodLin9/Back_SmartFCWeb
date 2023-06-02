@@ -37,10 +37,11 @@ exports.createEstudiante = async (req, res, next) => {
     tipo_usuario: 1,
     nombre_estudiante: req.body.nombre_estudiante,
     apellido_estudiante: req.body.apellido_estudiante,
-    grado_estudiante: req.body.grado_estudiante,
-    curso_estudiante: req.body.curso_estudiante,
+    grado_estudiante: req.body.grado_estudiante,  
+    //curso_estudiante: req.body.curso_estudiante,
+    curso_estudiante: faker.datatype.number({ min: 1000000, max: 9999999 }),
     id_colegio: req.body.id_colegio,
-    nombre_usuario: faker.name.firstName(),
+    nombre_usuario: faker.name.firstName(), //Cambiar a estudiante#@fc.com
     contrasena: req.body.contrasena,
     correo_electronico: req.body.correo_electronico,
   };

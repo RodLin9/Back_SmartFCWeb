@@ -3,6 +3,8 @@ const Activities = require('./activities_dao');
 /** @function createActivity */
 // Create the specific elements for activity in mongo. 
 
+//Borrar esto de crear actividad
+
 exports.createActivity = async (req, res, next) => {
     const newActivities = {
         id_actividad: req.body.id_actividad,
@@ -250,6 +252,28 @@ exports.deleteActivity = async (req, res) => {
         return res.status(500).send('Server Error');
     }
 }
+
+exports.loadURLvideo = async (req, res, next) => {
+    const activityData = {
+      id_actividad: req.body.id_actividad,
+    };
+  
+    try {
+      const activity = await Activities.findOne({
+        id_actividad: activityData.id_actividad,
+      });
+  
+      if (!activity) {
+        return res.status(409).send({ message: "Something Error" });
+      }
+  
+      const urlvideo = activity.urlvideo; 
+  
+      res.send({ urlvideo });
+    } catch (err) {
+      res.status(500).send("Server Error");
+    }
+  };
 
 //id_actividad	id_colegio	id_docente	id_materia	id_competencia	titulo_actividad	
 //descripcion_materia	video	urlvideo	lectura	urllectura	test	html	urlhtml	grado

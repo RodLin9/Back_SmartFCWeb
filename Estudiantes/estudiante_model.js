@@ -45,6 +45,12 @@ const estudianteSchema = new Schema({
         required: true,
         trim: true
     },
+    nombre_usuario:{
+        type: String,
+        required: true,
+        trim: true,
+        unique: true
+    },
     contrasena:{
         type: String,
         required: true,
