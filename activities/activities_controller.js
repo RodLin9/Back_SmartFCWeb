@@ -275,5 +275,25 @@ exports.loadURLvideo = async (req, res, next) => {
     }
   };
 
+exports.loadActivityByMateriaId = async (req, res, next) => {
+    const activityData = {
+        id_materia: req.body.id_materia,
+    };
+
+    try {
+        const activity = await Activities.findOne({
+            id_materia: activityData.id_materia,
+        });
+
+        if (!activity) {
+            return res.status(409).send({ message: "No se encontró la actividad" });
+        }
+
+        res.send({ activity });
+    } catch (err) {
+        res.status(500).send("Server Error");
+    }
+};
+
 //id_actividad	id_colegio	id_docente	id_materia	id_competencia	titulo_actividad	
 //descripcion_materia	video	urlvideo	lectura	urllectura	test	html	urlhtml	grado
