@@ -10,7 +10,7 @@ const SECRET_KEY = 'secretkey1234' //clave secreta SECRET_KEY para el módulo js
 /** @function createEstudiante */
 // Create the specific elements for authE in mongo. 
 
-exports.createEstudianteFake = (req, res) => {
+/*exports.createEstudianteFake = (req, res) => {
   const student = [];
   const { size } = req.query;
   const limit = size || 15;
@@ -25,39 +25,69 @@ exports.createEstudianteFake = (req, res) => {
       id_colegio: req.body.id_colegio,
       nombre_usuario: req.body.nombre_usuario,
       contrasena: req.body.contrasena,
-      correo_electronico: req.body.correo_electronico*/
+      correo_electronico: req.body.correo_electronico
     });
   }
   res.json(student);
-}
+} */
 
-exports.createEstudiante = async (req, res, next) => {
-  const newEstudiante = {
-    id_estudiante: faker.datatype.number({ min: 1000000000, max: 9999999999 }),
-    tipo_usuario: 1,
-    nombre_estudiante: req.body.nombre_estudiante,
-    apellido_estudiante: req.body.apellido_estudiante,
-    grado_estudiante: req.body.grado_estudiante,  
-    //curso_estudiante: req.body.curso_estudiante,
-    curso_estudiante: faker.datatype.number({ min: 1000000, max: 9999999 }),
-    id_colegio: req.body.id_colegio,
-    nombre_usuario: faker.name.firstName(), //Cambiar a estudiante#@fc.com
-    contrasena: req.body.contrasena,
-    correo_electronico: req.body.correo_electronico,
+//FIXME: Cambiar nombre_usuario a estudiante#@fc.com
+//FIXME: id_estudiante ser como los demás en la db
+//FIXME: ¿El curso del estudiante cómo se crea?
+
+  exports.createEstudiante = async (req, res, next) => {
+    const newEstudiante = {
+      id_estudiante: faker.datatype.number({ min: 1000000000, max: 9999999999 }),
+      tipo_usuario: 1,
+      nombre_estudiante: req.body.nombre_estudiante,
+      apellido_estudiante: req.body.apellido_estudiante,
+      grado_estudiante: req.body.grado_estudiante,  
+      //curso_estudiante: req.body.curso_estudiante,
+      curso_estudiante: faker.datatype.number({ min: 100000, max: 999999 }),
+      id_colegio: req.body.id_colegio,
+      nombre_usuario: faker.internet.userName(), 
+      contrasena: req.body.contrasena,
+      correo_electronico: req.body.correo_electronico,
+    };
+
+    try {
+      const student = await Estudiante.create(newEstudiante);
+      console.log('Estudiante creado exitosamente:', student, ':)');
+      res.send({ student: student });
+    } catch (err) {
+      console.error('Error al crear el estudiante:', err);
+      res.status(500).send('No se ha podido registrar el estudiante :(');
+    }
   };
-
-  try {
-    const student = await Estudiante.create(newEstudiante);
-    console.log('Estudiante creado exitosamente:', student, ':)');
-    res.send({ student: student });
-  } catch (err) {
-    console.error('Error al crear el estudiante:', err);
-    res.status(500).send('No se ha podido registrar el estudiante :(');
-  }
-};
 /** @function loginEstudiante */
 // Login authEstudiante.
-exports.loginEstudiante = async (req, res, next)=>{
+
+  exports.loginEstudiante = async (req, res, next) => {
+    const estudianteData = {
+      correo_electronico: req.body.correo_electronico,
+      contrasena: req.body.contrasena
+    };
+
+    try {
+      const student = await Estudiante.findOne({ correo_electronico: estudianteData.correo_electronico });
+
+      if (!student) {
+        return res.status(409).send({ message: 'correo_electronico no encontrado' });
+      }
+
+      const resultContrasena = estudianteData.contrasena;
+
+      if (resultContrasena === student.contrasena) {
+        res.send({ student });
+      } else {
+        res.status(409).send(null);
+      }
+    } catch (err) {
+      res.status(500).send('Server Error');
+    }
+  };
+
+/*exports.loginEstudiante = async (req, res, next)=>{
     const estudianteData = {
         correo_electronico: req.body.correo_electronico,
         contrasena: req.body.contrasena
@@ -77,151 +107,100 @@ exports.loginEstudiante = async (req, res, next)=>{
     } catch (err) {
         res.status(500).send(`Server Error`);
     }
-}
+} */
 /** @function allStudents */
-exports.allStudents = (req, res, next) => {
-    Estudiante.find()
-      .then((students) => {
-        if (!students) {
-          res.status(409).send({ message: 'Something Error' });
-        } else {
-          res.send(students);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        res.status(500).send('Server Error');
-      });
+  exports.allStudents = async (req, res, next) => {
+    try {
+      const students = await Estudiante.find();
+
+      if (!students) {
+        return res.status(409).send({ message: 'Something Error, estudiantes no encontrados' });
+      }
+      res.send(students);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Server Error');
+    }
   };
 /** @function loadStudents */
 // Load student in platform.
 
+  exports.loadEstudiante = async (req, res, next) => {
+    try {
+        const estudianteData = {
+            id_estudiante: req.body.id_estudiante
+        };
 
+        const student = await Estudiante.findOne({ id_estudiante: estudianteData.id_estudiante });
 
-exports.loadEstudiante = (req, res, next) => {
-    const estudianteData = {
-      id_estudiante: req.body.id_estudiante
-    };
-  
-    Estudiante.findOne({ id_estudiante: estudianteData.id_estudiante })
-      .then((student) => {
         if (!student) {
-          res.status(409).send({ message: `Something Error` });
-        } else {
-          res.send({ student });
+            return res.status(409).send({ message: 'Something Error' });
         }
-      })
-      .catch((err) => {
+
+        //res.send({ student });
+        res.send([student]);
+    } catch (err) {
         res.status(500).send(`Server Error ${err}`);
-      });
+    }
   }; 
-  
-  
-  
-/** @function allStudents */
-// Load all students in platform.
-exports.allStudents = (req, res, next) => {
-    Estudiante.find()
-      .then((students) => {
-        if (!students) {
-          res.status(409).send({ message: 'Something Error' });
-        } else {
-          res.send(students);
-        }
-      })
-      .catch((err) => {
-        res.status(500).send(`Server Error ${err}`);
-      });
-  };
-/** @function allStudents */
-// Load all students in platform.
-exports.allStudents = (req, res, next) => {
-    Estudiante.find()
-      .then((Students) => {
-        if (!Students) {
-          return res.status(409).send({ message: "Something Error" });
-        }
-        res.send(Students);
-      })
-      .catch((err) => {
-        return res.status(500).send("Server Error");
-      });
-  };  
-  
-  
-  
-/** @function allStudents */
-// Load all students in platform.
-exports.allStudents = (req, res, next) => {
-    Estudiante.find()
-      .then((Students) => {
-        if (!Students) {
-          res.status(409).send({ message: 'Something Error' });
-        } else {
-          res.send(Students);
-        }
-      })
-      .catch((err) => {
-        res.status(500).send('Server Error');
-      });
-  }
+
 /** @function allEstudiantes */
 // Load all students in platform.
 
-exports.allEstudiantes = (req, res, next) => {
-    Estudiante.find()
-      .then((students) => {
+  exports.allStudents = async (req, res, next) => {
+    try {
+        const students = await Estudiante.find();
+
         if (!students) {
-          res.status(409).send({ message: 'Something Error' });
-        } else {
-          res.send(students);
+            return res.status(409).send({ message: 'Something Error' });
         }
-      })
-      .catch((err) => {
-        res.status(500).send('Server Error');
-      });
-  }
+
+        res.send(students);
+    } catch (err) {
+        return res.status(500).send('Server Error');
+    }
+  };  
 
 /** @function uploadEstudiante */
 // Update student in platform.
 
-exports.uploadEstudiante = (req, res, next) => {
-  const estudianteData = {
-    id_estudiante: req.body.id_estudiante
-  }
-  const estudianteNewData = {
-    nombre_estudiante: req.body.nombre_estudiante,
-    apellido_estudiante: req.body.apellido_estudiante,
-    grado_estudiante: req.body.grado_estudiante,
-    curso_estudiante: req.body.curso_estudiante,
-    nombre_usuario: req.body.nombre_usuario,
-    contrasena: req.body.contrasena,
-    correo_electronico: req.body.correo_electronico
-  }
-  Estudiante.updateOne({ id_estudiante: estudianteData.id_estudiante }, { $set: estudianteNewData }, { new: true })
-    .then(() => {
+  exports.uploadEstudiante = async (req, res, next) => {
+    const estudianteData = {
+      id_estudiante: req.body.id_estudiante
+    }
+    const estudianteNewData = {
+      nombre_estudiante: req.body.nombre_estudiante,
+      apellido_estudiante: req.body.apellido_estudiante,
+      grado_estudiante: req.body.grado_estudiante,
+      curso_estudiante: req.body.curso_estudiante,
+      nombre_usuario: req.body.nombre_usuario,
+      contrasena: req.body.contrasena,
+      correo_electronico: req.body.correo_electronico
+    }
+
+    try {
+      await Estudiante.updateOne({ id_estudiante: estudianteData.id_estudiante }, { $set: estudianteNewData });
       res.json({ status: 'Informacion Estudiante Actualizada' });
-    })
-    .catch((err) => {
+    } catch (err) {
       res.status(500).send(`Server Error ${err}`);
-    });
-};
+    }
+  };
 
 /** @function deleteEstudiante */
 // Delete student in platform.
 
-exports.deleteEstudiante = (req, res, next) => {
+  exports.deleteEstudiante = async (req, res, next) => {
     const estudianteData = {
-        id_estudiante: req.body.id_estudiante
+      id_estudiante: req.body.id_estudiante
     };
-    Estudiante.deleteOne({id_estudiante: estudianteData.id_estudiante})
-        .then(() => {
-            res.json({Estado: 'Estudiante Eliminado'});
-        })
-        .catch((err) => {
-            res.status(500).send(`Server Error ${err}`);
-        });
-};
+
+    try {
+      await Estudiante.deleteOne({ id_estudiante: estudianteData.id_estudiante });
+      res.json({ Estado: 'Estudiante Eliminado' });
+    } catch (err) {
+      res.status(500).send(`Server Error ${err}`);
+    }
+  };
 /** @function conectionWithApp */
 // Response about 1 for conect with app
 
