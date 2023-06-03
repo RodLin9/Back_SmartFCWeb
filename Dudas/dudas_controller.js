@@ -16,7 +16,7 @@ exports.createDuda = async (req, res, next)=>{
 
     try{
         const duda = await Duda.create(newDuda);
-        res.send({ duda });
+        res.send({ message: "Duda creada exitosamente", duda });
     } catch {
         res.status(500).send('Server error');
     }
@@ -34,7 +34,9 @@ exports.loadDuda = async (req, res, next) => {
         if (!duda) {
             return res.status(409).send({ message: 'Something error' });
         }
-        res.send({ duda });
+        //res.send({ duda });
+        res.send([duda]);
+
     } catch (err) {
         return res.status(500).send('Server Error')
     }
@@ -50,13 +52,14 @@ exports.loadDudaStudent = async (req, res, next) => {
     }
 
     try {
-        Duda.find({ id_estudiante: dudaData.id_estudiante }).exec();
-        if (!duda) {
-            return res.status(409).send('Something error')
+        const dudas = await Duda.find({ id_estudiante: dudaData.id_estudiante }).exec();
+        if (!dudas || dudas.length === 0) {
+            return res.status(409).send('El estudiante no tiene dudas');
         }
-        res.send({ duda });
-    } catch {
-        return res.status(500).send('Server error')
+        res.send(dudas);
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send('Error del servidor');
     }
 }
 
@@ -66,7 +69,7 @@ findOne() se utiliza cuando se desea buscar un único documento que cumpla con c
 /** @function allDudas */
 // Load all the specific elements for Duda in mongo. 
 
-//Esta retorna todaaaas las dudas en mongo! No creo que se use, BORRAR... 
+//FIXME: Esta retorna todaaaas las dudas en mongo! No creo que se use, BORRAR... 
 
 exports.allDudas = async (req, res, next) => {
     try {

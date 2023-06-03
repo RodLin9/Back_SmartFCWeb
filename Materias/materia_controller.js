@@ -11,7 +11,7 @@ exports.createSubject = async (req, res, next) => {
       nombre_materia: req.body.nombre_materia,
       id_colegio: req.body.id_colegio,
       id_areaMateria: req.body.id_areaMateria,
-      //url_imagen: req.body.url_imagen,
+      url_imagen: req.body.url_imagen,
       avatar: faker.image.avatar(),
     };
   
@@ -28,41 +28,36 @@ exports.createSubject = async (req, res, next) => {
 // Load the specific elements for Subject in mongo. 
 
 exports.loadSubject = async (req, res, next) => {
-    const subjectData = {
-      id_materia: req.body.id_materia,
-    };
-  
-    try {
-      const subject = await Subject.findOne({ id_materia: subjectData.id_materia });
-      if (!subject) {
-        res.status(409).send({ message: `Something Error` });
-      } else {
-        res.send({ subject });
-      }
-    } catch (err) {
-      res.status(500).send("Server Error");
-    }
+  const subjectData = {
+    id_materia: req.body.id_materia,
   };
+
+  try {
+    const subject = await Subject.findOne({ id_materia: subjectData.id_materia });
+    if (!subject) {
+      res.status(409).send({ message: "Something Error" });
+    } else {
+      res.send([subject]); // Envolvemos el documento en un array
+    }
+  } catch (err) {
+    res.status(500).send("Server Error");
+  }
+};
 
 /** @function allSubjects */
 // Load all the specific elements for Subject in mongo. 
 
-exports.allSubjects = (req, res, next) => {
-    Subject.find()
-        .then
-}
-exports.allSubjects = (req, res, next) => {
-    Subject.find()
-      .then((subjects) => {
-        if (!subjects) {
-          res.status(409).send({ message: "Something Error" });
-        } else {
-          res.send(subjects);
-        }
-      })
-      .catch((err) => {
-        res.status(500).send("Server Error");
-    });
+exports.allSubjects = async (req, res, next) => {
+  try {
+    const subjects = await Subject.find();
+    if (!subjects) {
+      res.status(409).send({ message: "Something Error" });
+    } else {
+      res.send(subjects);
+    }
+  } catch (err) {
+    res.status(500).send("Server Error");
+  }
 };
 
 /** @function newLoadSubjects */
@@ -76,13 +71,13 @@ exports.newLoadSubjects = async (req, res) => {
 // Delete the specific elements for Subject in mongo. 
 
 exports.deleteSubject = async (req, res) => {
-    const subjectData = {
-      id_materia: req.body.id_materia
-    };
-    try {
-      await Subject.deleteOne({ id_materia: subjectData.id_materia });
-      res.json({ Estado: 'Materia Eliminada' });
-    } catch (err) {
-      res.status(500).send('Server Error');
-    }
+  const subjectData = {
+    id_materia: req.body.id_materia
+  };
+  try {
+    await Subject.deleteOne({ id_materia: subjectData.id_materia });
+    res.json({ Estado: 'Materia Eliminada' });
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
 };
