@@ -6,7 +6,7 @@ module.exports=(router)=> {
     router.post('/loadSubjectActive', SubjectActive.loadSubjectActive);
     router.get('/loadAllSubjectActives', SubjectActive.allSubjectActives);
     router.post('/loadAllSubjectActivesMovil', SubjectActive.allSubjectActivesMovil);
-    router.get('/newLoadSubjectActives', SubjectActive.newLoadSubjectActives);
+    //router.get('/newLoadSubjectActives', SubjectActive.newLoadSubjectActives);
     //router.put('/modifySubjectActive', SubjectActive.modifySubjectActive);
     router.post('/deleteSubjectActive', SubjectActive.deleteSubjectActive);
 }

@@ -2,6 +2,8 @@ const SubjectActive = require('./materiaActiva_dao');
 /** @function createSubjectActive */
 // Create the specific elements for Subject in mongo. 
 
+//TODO: Quitar los comentarios, según se quiera dejar las resp en array o no
+
 exports.createSubjectActive = async (req, res, next) => {
     try {
         const newSubjectActive = {
@@ -25,7 +27,7 @@ exports.createSubjectActive = async (req, res, next) => {
 /** @function loadSubjectActive */
 // Load the specific elements for Subject in mongo. 
 
-exports.loadSubjectActive = async (req, res, next) => {
+/*exports.loadSubjectActive = async (req, res, next) => {
     try {
         const subjectActiveData = {
             id_materiaActiva: req.body.id_materiaActiva,
@@ -43,7 +45,28 @@ exports.loadSubjectActive = async (req, res, next) => {
     } catch (err) {
         res.status(500).send("Server Error");
     }
+};*/
+
+exports.loadSubjectActive = async (req, res, next) => {
+    try {
+        const subjectActiveData = {
+            id_materiaActiva: req.body.id_materiaActiva,
+        };
+
+        const subjectActive = await SubjectActive.findOne({
+            id_materiaActiva: subjectActiveData.id_materiaActiva,
+        });
+
+        if (!subjectActive) {
+            return res.status(409).send({ message: "Something Error" });
+        }
+
+        res.send({ subjectActive: [subjectActive] });
+    } catch (err) {
+        res.status(500).send("Server Error");
+    }
 };
+
 /** @function allSubjectActives */
 // Load all the specific elements for Subject in mongo. 
 
@@ -74,13 +97,13 @@ exports.allSubjectActivesMovil = async (req, res, next) => {
         const subjectActives = await SubjectActive.find();
 
         if (!subjectActives) {
-            return res.status(409).send({ message: "Something Error" });
+            return res.status(409).send({ message: "No se encontraron materias activas" });
         } else {
             activadoSend = 1;
         }
 
         if (activadoSend === 1) {
-            console.log(subjectActives.length);
+            console.log("Número total de materias activas: " + subjectActives.length);
             const arrayColegio = [];
             const arrayFilterFinal = [];
 
@@ -106,10 +129,10 @@ exports.allSubjectActivesMovil = async (req, res, next) => {
 /** @function newLoadSubjectActives */
 // Load all the specific elements for Subject in mongo. 
 
-exports.newLoadSubjectActives = async (req, res) => {
+/*exports.newLoadSubjectActives = async (req, res) => {
     const subjectActivesData = await SubjectActive.find();
     res.json(subjectActivesData);
-}
+}*/
 /** @function deleteSubjectActive */
 // Delete the specific elements for Subject in mongo. 
 

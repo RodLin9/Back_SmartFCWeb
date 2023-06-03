@@ -3,7 +3,7 @@ const Activities = require('./activities_dao');
 /** @function createActivity */
 // Create the specific elements for activity in mongo. 
 
-//Borrar esto de crear actividad
+//TODO: Borrar esto de crear actividad y comentarios
 
 exports.createActivity = async (req, res, next) => {
     const newActivities = {
@@ -110,10 +110,10 @@ exports.loadActivity = async (req, res, next) => {
         });
 
         if (!activity) {
-            return res.status(409).send({ message: "Something Error" });
+            return res.status(409).send({ message: "Actividad no encontrada" });
         }
-
-        res.send({ activity });
+        //res.send({ activity });
+        res.send([activity]); // Envía el objeto activity dentro de un array
     } catch (err) {
         res.status(500).send("Server Error");
     }
@@ -127,7 +127,7 @@ exports.allActivities = async (req, res, next) => {
         const activities = await Activities.find();
 
         if (!activities) {
-            return res.status(409).send({ message: "Something Error" });
+            return res.status(409).send({ message: "Actividades no encontradas" });
         }
 
         res.send(activities);
@@ -253,29 +253,36 @@ exports.deleteActivity = async (req, res) => {
     }
 }
 
+/** @function loadURLvideo */
+// Load the URLvideo from activity of mongo for app web. 
+
 exports.loadURLvideo = async (req, res, next) => {
     const activityData = {
-      id_actividad: req.body.id_actividad,
+        id_actividad: req.body.id_actividad,
     };
-  
-    try {
-      const activity = await Activities.findOne({
-        id_actividad: activityData.id_actividad,
-      });
-  
-      if (!activity) {
-        return res.status(409).send({ message: "Something Error" });
-      }
-  
-      const urlvideo = activity.urlvideo; 
-  
-      res.send({ urlvideo });
-    } catch (err) {
-      res.status(500).send("Server Error");
-    }
-  };
 
-  exports.loadActivityByMateriaId = async (req, res, next) => {
+    try {
+        const activity = await Activities.findOne({
+            id_actividad: activityData.id_actividad,
+        });
+
+        if (!activity) {
+            return res.status(409).send({ message: "Actividad no encontrada" });
+        }
+
+        const urlvideo = activity.urlvideo;
+        //res.send({ urlvideo });
+        res.send([urlvideo]); // Envía el urlvideo dentro de un array
+
+    } catch (err) {
+        res.status(500).send("Server Error");
+    }
+};
+
+/** @function loadActivityByMateriaId */
+// Load activity of mongo for app web by Materia activa Id. 
+
+exports.loadActivityByMateriaId = async (req, res, next) => {
     const activityData = {
         id_materiaActiva: req.body.id_materiaActiva,
     };
@@ -285,15 +292,14 @@ exports.loadURLvideo = async (req, res, next) => {
             id_materiaActiva: activityData.id_materiaActiva,
         });
 
-        if (!activity) {    
-            return res.status(409).send({ message: "No se encontró la actividad" });
+        if (!activity) {
+            return res.status(409).send({ message: "No se encontró la actividad por id_materiaActiva" });
         }
 
-        res.send({ activity });
+        //res.send({ activity });
+        res.send([activity]); // Actividad dentro de un array
+
     } catch (err) {
         res.status(500).send("Server Error");
     }
 };
-
-//id_actividad	id_colegio	id_docente	id_materia	id_competencia	titulo_actividad	
-//descripcion_materia	video	urlvideo	lectura	urllectura	test	html	urlhtml	grado
