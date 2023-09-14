@@ -9,4 +9,5 @@ module.exports=(router)=> {
     //router.get('/newLoadSubjectActives', SubjectActive.newLoadSubjectActives);
     //router.put('/modifySubjectActive', SubjectActive.modifySubjectActive);
     router.post('/deleteSubjectActive', SubjectActive.deleteSubjectActive);
+    router.post('/SearchSubjectActive', SubjectActive.searchSubjectActive);
 }

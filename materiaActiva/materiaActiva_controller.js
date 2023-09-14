@@ -149,3 +149,31 @@ exports.deleteSubjectActive = async (req, res) => {
         res.status(500).json({ error: "Server Error" });
     }
 };
+
+/** @function SearchSubjectActive */
+// Search all the specific elements for active subject according the input.
+//Filtro de busqueda por materia activa
+
+exports.searchSubjectActive = async (req, res, next) => {
+    const subjectActiveData = {
+        nombre_materiaActiva: req.body.nombre_materiaActiva,
+    };
+  
+    try {
+    //subjectActive: Se utiliza para almacenar el resultado de la consulta a la db
+      const subjectActive = await SubjectActive.find({ 
+        //Se busca en la colección SubjectActive, donde el nombre coincida con la expresión regular (Lo que ingresa el usuario)
+        nombre_materiaActiva: { $regex: subjectActiveData.nombre_materiaActiva, $options: "xi" },
+        //Con $options se hace que no importe si son mayúsculas y minúsculas (i) y que coincida con múltiples líneas (x).
+      });
+  
+      if (!subjectActive || subjectActive.length === 0) {
+        return res.status(409).send({ message: "Something Error" });
+      }
+  
+      res.send({ subjectActive });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Server Error');
+    }
+  };
