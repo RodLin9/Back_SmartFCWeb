@@ -14,7 +14,7 @@ exports.loadType = async (req, res, next) => {
       if (!type) {
         res.status(409).send({ message: `Something Error` });
       } else {
-        res.send({ type });
+        res.send([ type ]);
       }
     } catch (err) {
       res.status(500).send(`Server Error ${err}`);
