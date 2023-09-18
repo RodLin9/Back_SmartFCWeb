@@ -108,69 +108,10 @@ exports.allContentMovil = async (req, res, next) => {
   }
 };
 
-/** @function newLoadContentREA */
+///** @function newLoadContentREA */
 // Load all the specific elements for content in mongo. 
 
-exports.newLoadContentREA = async (req, res) => {
+/*exports.newLoadContentREA = async (req, res) => {
     const contentsData = await ContentREA.find();
     res.json(contentsData);
-}
-/** @function deleteContentREA */
-// Delete the specific elements for content in mongo. 
-
-exports.deleteContentREA = async (req, res) => {
-    try {
-      const contentData = {
-        id_CREA: req.body.id_CREA
-      };
-  
-      await ContentREA.deleteOne({ id_CREA: contentData.id_CREA });
-      
-      res.json({ Estado: 'Contenido Eliminado' });
-    } catch (err) {
-      res.status(500).send('Server Error');
-    }
-  };
-  
-/** @function uploadEstadoContentREA */
-// Upload the specific elements for content in mongo. 
-
-
-exports.uploadEstadoContentREA = async (req, res) => {
-    try {
-      const contentData = {
-        id_CREA: req.body.id_CREA
-      };
-  
-      const contentNewEstadoData = {
-        en_uso: req.body.en_uso
-      };
-  
-      await ContentREA.updateOne({ id_CREA: contentData.id_CREA }, { $set: contentNewEstadoData });
-  
-      res.json({ status: 'Estado Contenido Actualizado' });
-    } catch (err) {
-      res.status(500).send('Server Error');
-    }
-  };
-
-/** @function uploadURLContentREA */
-// Upload the specific elements for content in mongo. 
-
-exports.uploadURLContentREA = async (req, res) => {
-  try {
-    const contentData = {
-      id_CREA: req.body.id_CREA
-    };
-
-    const contentNewURLData = {
-      urlrepositorio: req.body.urlrepositorio
-    };
-
-    await ContentREA.updateOne({ id_CREA: contentData.id_CREA }, { $set: contentNewURLData });
-
-    res.json({ status: 'URL Contenido Actualizado' });
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
-};
+}*/
