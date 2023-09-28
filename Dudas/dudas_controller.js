@@ -1,26 +1,47 @@
 const Duda = require('./dudas_dao');
+const Secuencia = require('../secuencia_model');
 
 /** @function createDuda */
 // Create the specific elements for Duda in mongo. 
 
-exports.createDuda = async (req, res, next)=>{
-    const newDuda = {
-        id_duda: req.body.id_duda,
+async function generarIdDuda() {
+    const secuencia = await Secuencia.findOneAndUpdate(
+        { nombre: 'id_duda' }, // Nombre de la secuencia para id_duda
+        { $inc: { valor: 1 } },
+        { upsert: true, new: true }
+    );
+
+    return secuencia.valor;
+}
+
+exports.createDuda = async (req, res, next) => {
+    try {
+      // Paso 1: Consulta el documento con el id_duda más alto
+      const lastDuda = await Duda.findOne({}, { id_duda: 1 }).sort({ id_duda: -1 });
+  
+      // Paso 2: Obtiene el valor del id_duda más alto o usa 0 si no hay dudas existentes
+      const lastIdDuda = lastDuda ? lastDuda.id_duda : 0;
+  
+      // Paso 3: Calcula el nuevo id_duda sumando 1 al último valor
+      const newIdDuda = lastIdDuda + 1;
+  
+      // Crea la nueva duda con el nuevo id_duda
+      const newDuda = {
+        id_duda: newIdDuda,
         id_actividad: req.body.id_actividad,
         id_estudiante: req.body.id_estudiante,
         pregunta: req.body.pregunta,
         respuesta: req.body.respuesta,
-        estado_duda: req.body.estado_duda
+        estado_duda: req.body.estado_duda,
+      };
+  
+      const duda = await Duda.create(newDuda);
+      res.send({ message: "Duda creada exitosamente", duda });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
     }
-    console.log(newDuda);
-
-    try{
-        const duda = await Duda.create(newDuda);
-        res.send({ message: "Duda creada exitosamente", duda });
-    } catch {
-        res.status(500).send('Server error');
-    }
-}
+  };
 
 /** @function loadDuda */
 // Load the specific elements for Duda in mongo. 
