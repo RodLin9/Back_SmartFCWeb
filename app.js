@@ -15,6 +15,7 @@ const materiaActivaRoutes = require('./materiaActiva/materiaActiva_routes');
 const tipoContenidoRoutes = require('./Tipo_Contenido/tipo_routes');
 const contenidoREA = require('./Contenido_REA/contenido_routes');
 const docenteRoutes = require('./Docentes/docentes_routes');
+const eventoRoutes = require('./Eventos/eventos_routes');
 
 const dbConnect = require('./config/db')
 dbConnect()
@@ -108,6 +109,7 @@ materiaActivaRoutes(router);
 tipoContenidoRoutes(router);
 contenidoREA(router);
 docenteRoutes(router);
+eventoRoutes(router);
 
 const port = process.env.PORT || 3002
 
