@@ -4,6 +4,7 @@ require("dotenv").config() //Variables de entorno
 
 const express = require("express"); 
 const cors = require("cors"); 
+const ping = require('ping');
 
 const estudianteRoutes = require('./Estudiantes/estudiante_routes');
 const materiaRoutes = require('./Materias/materia_routes');
@@ -53,18 +54,6 @@ app.post('/subir', multipartMiddleware, (req, res) => {  //Esto significa que cu
       //La URL se construye concatenando la URL base (http://localhost:3000/public/repositorio/) con la parte relevante de la ruta del archivo (lasturl).
   }); //El cliente puede utilizar esta URL para acceder a la imagen subida desde el servidor.
 });
-
-/*
-app.post('/subir', multipartMiddleware, (req, res) => {  
-    console.log(req.files.uploads[0].path);
-    const urls = req.files.uploads[0].path;
-    const numero = urls.lastIndexOf("/");
-    const lasturl = urls.substring(19);
-    res.json({
-        'url': `http://localhost:3000/public/repositorio/${lasturl}`
-    });
-});
-*/
 
 //Para subir usando Async Await
 
@@ -129,12 +118,41 @@ app.post('/tengohambre',(req,res)=>{
   res.status(200).send({message: 'Hola mundo, tengo hambre'})
 })
 
-router.get('/hello',(req, res)=>{
-  res.json({
-      'message': `Hola desde express!`
-  });
+
+require('dotenv').config({ path: '.env.example' });
+console.log('La direccion de prueba 2 es:' + process.env.IP_ADDRESS_2);
+
+app.post('/checkIp', (req, res) => {
+
+  const ipToCheck = req.body.ip;
+
+  console.log('La ip to check es ' + ipToCheck);
+
+  const allowedIPs = [process.env.IP_ADDRESS_1, process.env.IP_ADDRESS_2];
+  //console.log('Las ip son: ' + process.env.IP_ADDRESS_1 + ' y ' + process.env.IP_ADDRESS_2);
+  if (!allowedIPs.includes(ipToCheck)) {
+    res.json({ message: 'La dirección IP no está permitida' });
+    return;
+  }
+
+  res.json({ message: 'La dirección IP es permitida' });
 });
 
+app.post('/checkIp2', (req, res) => {
+
+  const ipToCheck = req.body.ip;
+
+  const allowedIPs = [process.env.IP_ADDRESS_1, process.env.IP_ADDRESS_2];
+
+  const isAllowed = allowedIPs.includes(ipToCheck);   // Verificar si la dirección IP está permitida
+  const response = {
+    message: isAllowed ? 'La dirección IP es permitida' : 'La dirección IP no está permitida',
+    isAllowed, //Si isAllowed es true, asignamos el mensaje "La dirección IP es permitida", y si isAllowed es false, asignamos el mensaje "La dirección IP no está permitida"
+  };
+
+  // Enviar una respuesta JSON al frontend con el objeto
+  res.status(isAllowed ? 200 : 403).json(response);
+});
 
 app.use(router);
 app.use(express.static('public'));
