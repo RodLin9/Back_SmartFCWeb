@@ -298,16 +298,20 @@ exports.loadActivityByMateriaId = async (req, res, next) => {
     };
 
     try {
-        const activity = await Activities.findOne({
+        const activities = await Activities.find({
             id_materiaActiva: activityData.id_materiaActiva,
         });
 
-        if (!activity) {
-            return res.status(409).send({ message: "No se encontró la actividad por id_materiaActiva" });
+        if (!activities || activities.length === 0) {
+            return res.status(409).send({ message: "No se encontraron actividades por id_materiaActiva" });
         }
 
-        //res.send({ activity });
-        res.send([activity]); // Actividad dentro de un array
+        // Enviar todas las actividades en un solo array, sin anidamiento
+        const flattenedActivities = activities.reduce((result, activity) => {
+            return result.concat(activity);
+        }, []);
+
+        res.send(flattenedActivities);
 
     } catch (err) {
         res.status(500).send("Server Error");
