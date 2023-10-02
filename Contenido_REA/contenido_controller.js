@@ -4,21 +4,35 @@ const ContentREA = require('./contenido_dao');
 // Load the specific elements for content in mongo. 
 
 exports.loadContentREA = async (req, res, next) => {
-    const contentData = {
-        id_CREA: req.body.id_contenidoREA
-    };
+  const contentData = {
+    id_CREA: req.body.id_CREA
+  };
 
-    try {
-        const content = await ContentREA.findOne({ id_CREA: contentData.id_CREA });
-        if (!content) {
-            res.status(409).send({ message: `Contenido no encontrado` });
-        } else {
-            res.send({ content });
-        }
-    } catch (err) {
-        res.status(500).send(`Server Error`);
+  try {
+    const content = await ContentREA.findOne({ id_CREA: contentData.id_CREA });
+    if (!content) {
+      res.status(409).send({ message: 'Contenido no encontrado' });
+    } else {
+      // Obtener la dirección IP de process.env.IP_ADDRESS_2
+      const ipAddress = process.env.IP_ADDRESS_2;
+
+      // Eliminar la parte no deseada de la URL
+      const urlSinPrefijo = content.urlrepositorio.replace('http://localhost:3000/public/repositorio/', '');
+
+      // Crear la URL modificada
+      const nuevaURL = `http://${ipAddress}:3000/repositorio/${urlSinPrefijo}`;
+
+      // Actualizar la URL en el objeto content
+      content.urlrepositorio = nuevaURL;
+
+      // Enviar el objeto content modificado como respuesta
+      res.send({ content });
     }
+  } catch (err) {
+    res.status(500).send(`Server Error: ${err}`);
+  }
 };
+
 /** @function allContent */
 // Load all the specific elements for content in mongo. 
 

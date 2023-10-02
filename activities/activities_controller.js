@@ -258,26 +258,36 @@ exports.deleteActivity = async (req, res) => {
 
 exports.loadURLvideo = async (req, res, next) => {
     const activityData = {
-        id_actividad: req.body.id_actividad,
+      id_actividad: req.body.id_actividad,
     };
-
+  
     try {
-        const activity = await Activities.findOne({
-            id_actividad: activityData.id_actividad,
-        });
-
-        if (!activity) {
-            return res.status(409).send({ message: "Actividad no encontrada" });
-        }
-
-        const urlvideo = activity.urlvideo;
-        //res.send({ urlvideo });
-        res.send([urlvideo]); // Envía el urlvideo dentro de un array
-
+      const activity = await Activities.findOne({
+        id_actividad: activityData.id_actividad,
+      });
+  
+      if (!activity) {
+        return res.status(409).send({ message: "Actividad no encontrada" });
+      }
+  
+      const ipAddress = process.env.IP_ADDRESS_2; // Obtener la dirección IP
+  
+      // Extraer la parte deseada de la URL eliminando la duplicación
+      const urlvideoSinDuplicacion = activity.urlvideo.replace('http://localhost:3000/public/repositorio/', '');
+  
+      // Construir la nueva URL completa con la dirección IP y la parte extraída
+      const nuevaURLvideo = `http://${ipAddress}:3000/repositorio/${urlvideoSinDuplicacion}`;
+  
+      // Actualizar la URL en el objeto activity
+      activity.urlvideo = nuevaURLvideo;
+  
+      // Enviar el objeto activity modificado como respuesta
+      res.send(activity);
+  
     } catch (err) {
-        res.status(500).send("Server Error");
+      res.status(500).send("Server Error");
     }
-};
+  };
 
 /** @function loadActivityByMateriaId */
 // Load activity of mongo for app web by Materia activa Id. 

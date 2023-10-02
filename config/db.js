@@ -7,7 +7,6 @@ const dbConnect = async () => {
         useNewUrlParser: true, //objeto de opciones con varias opciones para configurar la conexión
         useUnifiedTopology: true,
         autoIndex: true,
-        keepAlive: true
       });
       console.log('**** CONEXION CORRECTA ****');
     } catch (err) {
