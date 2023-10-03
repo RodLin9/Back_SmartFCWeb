@@ -1,64 +1,53 @@
-//El código que se muestra es un archivo de Node.js que exporta diferentes funciones que 
-//interactúan con una base de datos MongoDB a través de un modelo llamado Estudiante.
-
 const Estudiante = require('./estudiante_dao');
 const { faker } =require('@faker-js/faker');
-const jwt = require('jsonwebtoken'); //jsonwebtoken para la autenticación basada en tokens 
-const bcrypt =require('bcryptjs'); //para la encriptación de contraseñas.
-const SECRET_KEY = 'secretkey1234' //clave secreta SECRET_KEY para el módulo jsonwebtoken que se utiliza para firmar y verificar tokens.
+const jwt = require('jsonwebtoken'); //TODO: jsonwebtoken para la autenticación basada en tokens 
+const bcrypt =require('bcryptjs'); //TODO: para la encriptación de contraseñas.
+const SECRET_KEY = 'secretkey1234' //TODO: clave secreta SECRET_KEY para el módulo jsonwebtoken que se utiliza para firmar y verificar tokens.
 
 /** @function createEstudiante */
 // Create the specific elements for authE in mongo. 
 
-/*exports.createEstudianteFake = (req, res) => {
-  const student = [];
-  const { size } = req.query;
-  const limit = size || 15;
-  for (let index =0; index <limit; index++){
-    student.push({
-      id_estudiante: "1",
-      tipo_usuario: "1",
-      nombre_estudiante: faker.name.firstName(),
-      apellido_estudiante: faker.name.lastName(),
-      /*grado_estudiante: faker.date.birthdate(),
-      curso_estudiante: faker.internet.email(),
-      id_colegio: req.body.id_colegio,
-      nombre_usuario: req.body.nombre_usuario,
-      contrasena: req.body.contrasena,
-      correo_electronico: req.body.correo_electronico
-    });
-  }
-  res.json(student);
-} */
+exports.createEstudiante = async (req, res, next) => {
+  try {
+    // Verificar si los campos obligatorios están presentes y no son vacíos
+    const requiredFields = ['nombre_estudiante', 'apellido_estudiante', 'grado_estudiante', 'id_colegio', 'contrasena', 'correo_electronico'];
 
-//FIXME: Cambiar nombre_usuario a estudiante#@fc.com
-//FIXME: id_estudiante ser como los demás en la db
-//FIXME: ¿El curso del estudiante cómo se crea?
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ error: `El campo '${field}' no puede estar vacío.` });
+      }
+    }
 
-  exports.createEstudiante = async (req, res, next) => {
+    // Verificar si el correo electrónico ya está registrado
+    const existingStudent = await Estudiante.findOne({ correo_electronico: req.body.correo_electronico });
+
+    if (existingStudent) {
+      return res.status(400).json({ error: 'El correo electrónico ya está registrado.' });
+    }
+
     const newEstudiante = {
       id_estudiante: faker.datatype.number({ min: 1000000000, max: 9999999999 }),
       tipo_usuario: 1,
       nombre_estudiante: req.body.nombre_estudiante,
       apellido_estudiante: req.body.apellido_estudiante,
-      grado_estudiante: req.body.grado_estudiante,  
-      //curso_estudiante: req.body.curso_estudiante,
-      curso_estudiante: faker.datatype.number({ min: 100000, max: 999999 }),
+      grado_estudiante: req.body.grado_estudiante,
+      curso_estudiante: 2023,
       id_colegio: req.body.id_colegio,
-      nombre_usuario: faker.internet.userName(), 
+      nombre_usuario: req.body.correo_electronico,
       contrasena: req.body.contrasena,
       correo_electronico: req.body.correo_electronico,
     };
 
-    try {
-      const student = await Estudiante.create(newEstudiante);
-      console.log('Estudiante creado exitosamente:', student, ':)');
-      res.send({ student: student });
-    } catch (err) {
-      console.error('Error al crear el estudiante:', err);
-      res.status(500).send('No se ha podido registrar el estudiante :(');
-    }
-  };
+    const student = await Estudiante.create(newEstudiante);
+    console.log('Estudiante creado exitosamente:', student);
+    res.status(201).json({ student: student });
+  } catch (err) {
+    console.error('Error al crear el estudiante:', err);
+    res.status(500).json({ error: 'No se ha podido registrar el estudiante.' });
+  }
+};
+
+
 /** @function loginEstudiante */
 // Login authEstudiante.
 
@@ -87,27 +76,6 @@ const SECRET_KEY = 'secretkey1234' //clave secreta SECRET_KEY para el módulo js
     }
   };
 
-/*exports.loginEstudiante = async (req, res, next)=>{
-    const estudianteData = {
-        correo_electronico: req.body.correo_electronico,
-        contrasena: req.body.contrasena
-    }
-    try {
-        const student = await Estudiante.findOne({correo_electronico: estudianteData.correo_electronico});
-        if(!student){
-            res.status(409).send({message:'Something Error'});
-        }else{
-            const resultContrasena= estudianteData.contrasena;
-            if(resultContrasena==student.contrasena){
-                res.send({student});
-            }else{
-                res.status(409).send(null);
-            }
-        }
-    } catch (err) {
-        res.status(500).send(`Server Error`);
-    }
-} */
 /** @function allStudents */
   exports.allStudents = async (req, res, next) => {
     try {
