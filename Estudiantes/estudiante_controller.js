@@ -58,18 +58,27 @@ exports.createEstudiante = async (req, res, next) => {
     };
 
     try {
+      
+      if (!estudianteData.correo_electronico || !estudianteData.contrasena) {
+        return res.status(409).send({ message: 'Los campos son requeridos' });
+      }
+  
       const student = await Estudiante.findOne({ correo_electronico: estudianteData.correo_electronico });
 
       if (!student) {
         return res.status(409).send({ message: 'correo_electronico no encontrado' });
       }
 
+      /* const passwordMatch = await bcrypt.compare(estudianteData.contrasena, student.contrasena);
+
+    if (passwordMatch) {*/
       const resultContrasena = estudianteData.contrasena;
 
       if (resultContrasena === student.contrasena) {
         res.send({ student });
       } else {
         res.status(409).send(null);
+        console.log('Contraseña incorrecta' + passwordMatch);
       }
     } catch (err) {
       res.status(500).send('Server Error');
@@ -146,9 +155,15 @@ exports.createEstudiante = async (req, res, next) => {
       correo_electronico: req.body.correo_electronico
     }
 
+    const datosEstudiante = Object.values(estudianteNewData).filter(value => value !== undefined && value !== null);
+
+    if (datosEstudiante.length === 0) {
+      return res.status(400).send('No se proporcionaron campos para modificar');
+    }
+  
     try {
       await Estudiante.updateOne({ id_estudiante: estudianteData.id_estudiante }, { $set: estudianteNewData });
-      res.json({ status: 'Informacion Estudiante Actualizada' });
+      res.json({ status: 'Información del estudiante actualizada' });
     } catch (err) {
       res.status(500).send(`Server Error ${err}`);
     }
