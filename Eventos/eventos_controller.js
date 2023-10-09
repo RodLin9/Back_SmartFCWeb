@@ -1,80 +1,89 @@
 const Eventos = require('./eventos_dao'); //Se importa el evento definido en eventos_dao.js
-var async  = require('express-async-await')
+var async = require('express-async-await')
 const fetch = require('node-fetch');
- //Estas bibliotecas permiten utilizar funcionalidades asincrónicas y realizar solicitudes HTTP a través de fetch.
+//Estas bibliotecas permiten utilizar funcionalidades asincrónicas y realizar solicitudes HTTP a través de fetch.
 
-async function  obtenerLast () {
+//La variable last se utiliza para rastrear el último valor de count
+async function esPrimerEvento() { //FIXME: Eliminar esto
+    try {
+      const count = await Eventos.countDocuments();
+      return count === 0;
+    } catch (error) {
+      console.error('Error al verificar si es el primer evento:', error);
+      return false;
+    }
+}
+
+async function obtenerLast() {
+    //Las almacena el número de eventos en la db
     const last = await fetch('http://0.0.0.0:3001/loadAllEvento'); //realiza una solicitud HTTP GET a la URL 'http://0.0.0.0:3000/loadAllEvento' utilizando fetch.
     //Se intenta obtener eventos desde una ruta específica en tu servidor Express.
     const data = await last.json(); //Se espera la respuesta de la solicitud utilizando await last.json(). Esto permite convertir la respuesta en un objeto JavaScript (JSON) que puede ser manipulado en tu código.
     console.log("Comprobando cuantos item tiene")
     console.log(data.length); //Imprime en la consola el número de elementos en el objeto data que contiene la respuesta de la solicitud.
+    console.log()
     return data.length; //Devuelve la longitud de data, que representa la cantidad de eventos obtenidos desde la solicitud HTTP.
 }
 /** @function createEventos */
 // Create the specific elements for Eventos in mongo. 
 
-exports.createEventos= async(req,res,next)=>  {
+exports.createEventos = async (req, res, next) => {
+    try {
+        // Obtener el último valor. Obtener la longitud de algún tipo de lista de eventos.
+        const last = await obtenerLast();
+        let count = await Eventos.countDocuments();
 
-    //Obtiene el último valor. Obtiene la longitud de algún tipo de lista de eventos. 
-    var last = await obtenerLast();
-    console.log("El ultimo allado")
-    console.log(last);
+        if (count === 0) {
+            count = 1; // Establece count en 1 si es el primer evento
+            console.log('Si es primer evento');
+        } else {
+            count++; // Incrementa count si no es el primer evento
+        }
 
-    //Obtiene el id del evento desde la solicitud HTTP
-    var id_evento =req.body.id_evento; 
-    console.log("ID Eventos");
-    console.log(id_evento); //Id del evento desde la solicitud
+        console.log("Último encontrado");
+        console.log(last);
 
-    //Calcula el nuevo valor de ID, combinando el ID del evento y el valor obtrenido anteriormente
-    last = last+1;
-    console.log("Trayendo Last +1")
-    console.log(last);
-    var idCompleta = id_evento+''+last+'';
-    console.log("Imprimiendo IdCompleta");
-    console.log(idCompleta);
-    var idConvertida = parseInt(idCompleta,10);
-    console.log("ID Convertida");
-    console.log(idConvertida);
+        // Obtener el ID del evento desde la solicitud HTTP
+        const id_evento = req.body.id_evento;
+        console.log("ID Evento: " + id_evento);
 
-    //Crea un objeto newEvento 
+        // Crear un nuevo objeto de evento
+        const newEvento = {
+            id_evento: id_evento + count, // Combina el ID del evento con count
+            count: count,
+            data_start: req.body.data_start,
+            hour_start: req.body.hour_start,
+            data_end: req.body.data_end,
+            hour_end: req.body.hour_end,
+            id_actividad: req.body.id_actividad,
+            id_estudiante: req.body.id_estudiante,
+            check_download: req.body.check_download,
+            check_inicio: req.body.check_inicio,
+            check_fin: req.body.check_fin,
+            check_answer: req.body.check_answer,
+            count_video: req.body.count_video,
+            check_video: req.body.check_video,
+            check_document: req.body.check_document,
+            check_a1: req.body.check_a1,
+            check_a2: req.body.check_a2,
+            check_a3: req.body.check_a3,
+            check_profile: req.body.check_profile,
+            check_Ea1: req.body.check_Ea1,
+            check_Ea2: req.body.check_Ea2,
+            check_Ea3: req.body.check_Ea3,
+            oculto: 0,
+        };
 
-    const newEvento = {
-        id_evento: idConvertida,
-        count: last,
-        data_start: req.body.data_start,
-        hour_start: req.body.hour_start,
-        data_end: req.body.data_end,
-        hour_end: req.body.hour_end,
-        id_actividad: req.body.id_actividad,
-        id_estudiante: req.body.id_estudiante,
-        check_download: req.body.check_download,
-        check_inicio: req.body.check_inicio,
-        check_fin: req.body.check_fin,
-        check_answer: req.body.check_answer,
-        count_video: req.body.count_video,
-        check_video: req.body.check_video,
-        check_document: req.body.check_document,
-        check_a1: req.body.check_a1,
-        check_a2: req.body.check_a2,
-        check_a3: req.body.check_a3,
-        check_profile: req.body.check_profile,
-        check_Ea1: req.body.check_Ea1,
-        check_Ea2: req.body.check_Ea2,
-        check_Ea3: req.body.check_Ea3,
-        oculto: 0
-    }
-    //id_evento	data_start	hour_start	data_hours_end	hour_end
-    //	id_actividad	id_estudiante	check_download	check_inicio	
-    //check_fin	check_answer	count_video	check_video	check_document
-    //	check_a1	check_a2	check_a3	check_profile
+        // Crear el nuevo evento usando async/await
+        const evento = await Eventos.create(newEvento);
+        console.log('EL LAST COUNT ES: ' + count);
 
-    console.log(newEvento);
-    Eventos.create(newEvento,(err,evento)=>{
-        if(err) return res.status(500).send('Server Error');
         res.send(evento);
-    })
-}
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error del Servidor');
+    }
+};
 
 /** @function loadEvento */
 // Load the specific elements for Eventos in mongo.
@@ -87,31 +96,35 @@ exports.loadEvento = async (req, res, next) => {
 
         const evento = await Eventos.findOne({ id_estudiante: eventoData.id_estudiante });
 
-        if (!evento) {
-            return res.status(409).send({ message: 'Something Error' });
+        if (evento){
+            const idEventoNumerico = evento.id_evento;
+            //console.log('El id numerico es: ' + idEventoNumerico);
+            //console.log('El id de evento es: ' + evento.id_evento);
+            console.log(evento);
+        } else {
+            return res.status(404).send({ message: 'Evento no encontrado :(' });
         }
 
         res.send(evento);
     } catch (err) {
+        console.error(err);
         res.status(500).send('Server Error');
     }
-}
-/** @function allEventos */
-// Load all the specific elements for Eventos in MongoDB.
-
+};
 exports.allEventos = async (req, res, next) => {
     try {
         const eventStudents = await Eventos.find();
 
         if (!eventStudents || eventStudents.length === 0) {
-            return res.status(409).send({ message: 'Something Error' });
+            return res.status(404).send({ message: 'No se encontraron eventos' });
         }
 
         res.send(eventStudents);
     } catch (err) {
+        console.error(err);
         res.status(500).send('Server Error');
     }
-}
+};
 
 /** @function allEventsForAngular */
 // Load all the specific elements for Eventos in mongo. 
@@ -235,16 +248,20 @@ exports.uploadEvento = async (req, res) => {
             oculto: req.body.oculto
         };
 
-        await Eventos.updateOne({ id_evento: eventoData.id_evento }, { $set: eventoNewData });
+        // Actualiza el evento con el id_evento especificado
+        const resultado = await Eventos.updateOne({ id_evento: eventoData.id_evento }, { $set: eventoNewData });
 
-        res.json({ status: 'Evento Actualizado' });
+        // Verifica si se actualizó algún documento
+        if (resultado.nModified === 0) {
+            return res.status(404).json({ mensaje: 'Evento no encontrado o no modificado' });
+        }
+
+        res.json({ mensaje: 'Evento Actualizado' });
     } catch (err) {
-        res.status(500).send('Server Error');
+        console.error(err); 
+        res.status(500).send('Error del Servidor');
     }
-}
-/** @function uploadEstadoEvento */
-// Upload specific elements for Eventos in MongoDB.
-
+};
 exports.uploadEstadoEvento = async (req, res) => {
     try {
         const eventoData = {
@@ -255,13 +272,36 @@ exports.uploadEstadoEvento = async (req, res) => {
             oculto: req.body.oculto
         };
 
-        await Eventos.updateOne({ id_evento: eventoData.id_evento }, { $set: eventoNewData });
+        const resultado = await Eventos.updateOne({ id_evento: eventoData.id_evento }, { $set: eventoNewData });
 
-        res.json({ status: 'Estado Evento Actualizado' });
+        if (resultado.nModified === 0) {
+            return res.status(404).json({ mensaje: 'Evento no encontrado o no modificado' });
+        }
+
+        res.json({ mensaje: 'Estado del Evento Actualizado' });
     } catch (err) {
-        res.status(500).send('Server Error');
+        console.error(err); 
+        res.status(500).send('Error del Servidor');
     }
-}
-//id_evento	fecha	id_actividad	id_estudiante	
-//check_download	check_inicio	check_fin	
+};
+
+exports.deleteEvento = async (req, res, next) => {
+    try {
+      const idEvento = req.params.id;
+  
+      const eventoEliminado = await Eventos.findOneAndDelete({ id_evento: idEvento });
+  
+      if (!eventoEliminado) {
+        return res.status(404).send({ message: 'Evento no encontrado' });
+      }
+  
+      res.send({ message: 'Evento eliminado exitosamente :D', evento: eventoEliminado });
+    } catch (error) {
+      // Maneja cualquier error que ocurra durante la eliminación.
+      console.error('Error al eliminar el evento :( :', error);
+      return res.status(500).send('Server Error');
+    }
+  };
+//id_evento	fecha	id_actividad	id_estudiante
+//check_download	check_inicio	check_fin
 //check_answer	count_video	check_video

@@ -9,4 +9,5 @@ module.exports=(router)=> {
     router.post('/generateMetrica', Eventos.generateMetrics);
     router.post('/uploadEvento', Eventos.uploadEvento);
     router.post('/uploadEstadoEvento', Eventos.uploadEstadoEvento);
+    router.post('/deleteEvento', Eventos.deleteEvento);
 }
