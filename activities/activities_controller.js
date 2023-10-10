@@ -256,37 +256,36 @@ exports.deleteActivity = async (req, res) => {
 /** @function loadURLvideo */
 // Load the URLvideo from activity of mongo for app web. 
 
-exports.loadURLvideo = async (req, res, next) => {
+exports.loadURL = async (req, res, next) => {
     const activityData = {
       id_actividad: req.body.id_actividad,
     };
   
     try {
-      const activity = await Activities.findOne({
-        id_actividad: activityData.id_actividad,
-      });
-  
-      if (!activity) {
-        return res.status(409).send({ message: "Actividad no encontrada" });
+        const activity = await Activities.findOne({
+          id_actividad: activityData.id_actividad,
+        });
+      
+        if (!activity) {
+          return res.status(409).send({ message: "Actividad no encontrada" });
+        }
+      
+        const ipAddress = process.env.IP_ADDRESS_2; 
+      
+        const urlvideoSinDuplicacion = activity.urlvideo.replace('http://localhost:3000/public/repositorio/', '');
+        const urltallerSinDuplicacion = activity.urltaller.replace('http://localhost:3000/public/repositorio/', '');
+      
+        const nuevaURLvideo = `http://${ipAddress}:3000/repositorio/${urlvideoSinDuplicacion}`;
+        const nuevaURLtaller = `http://${ipAddress}:3000/repositorio/${urltallerSinDuplicacion}`;
+      
+        activity.urlvideo = nuevaURLvideo;
+        activity.urltaller = nuevaURLtaller;
+      
+        res.send(activity);
+      
+      } catch (err) {
+        res.status(500).send("Server Error");
       }
-  
-      const ipAddress = process.env.IP_ADDRESS_2; // Obtener la dirección IP
-  
-      // Extraer la parte deseada de la URL eliminando la duplicación
-      const urlvideoSinDuplicacion = activity.urlvideo.replace('http://localhost:3000/public/repositorio/', '');
-  
-      // Construir la nueva URL completa con la dirección IP y la parte extraída
-      const nuevaURLvideo = `http://${ipAddress}:3000/repositorio/${urlvideoSinDuplicacion}`;
-  
-      // Actualizar la URL en el objeto activity
-      activity.urlvideo = nuevaURLvideo;
-  
-      // Enviar el objeto activity modificado como respuesta
-      res.send(activity);
-  
-    } catch (err) {
-      res.status(500).send("Server Error");
-    }
   };
 
 /** @function loadActivityByMateriaId */

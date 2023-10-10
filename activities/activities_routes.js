@@ -9,7 +9,7 @@ module.exports=(router)=> {
     router.post('/uploadActivity', Activities.uploadActivity);
     router.post('/uploadSectionsActivity', Activities.uploadSectionsActivity);
     router.post('/deleteActivity', Activities.deleteActivity);
-    router.post('/loadVideoActivity', Activities.loadURLvideo);
+    router.post('/loadVideoActivity', Activities.loadURL);
     router.post('/loadActivityMateriaId', Activities.loadActivityByMateriaId);
 
 }
