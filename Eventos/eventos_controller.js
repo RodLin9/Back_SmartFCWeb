@@ -1,18 +1,9 @@
 const Eventos = require('./eventos_dao'); //Se importa el evento definido en eventos_dao.js
 var async = require('express-async-await')
 const fetch = require('node-fetch');
-//Estas bibliotecas permiten utilizar funcionalidades asincrónicas y realizar solicitudes HTTP a través de fetch.
+const { faker } =require('@faker-js/faker');
 
-//La variable last se utiliza para rastrear el último valor de count
-async function esPrimerEvento() { //FIXME: Eliminar esto
-    try {
-      const count = await Eventos.countDocuments();
-      return count === 0;
-    } catch (error) {
-      console.error('Error al verificar si es el primer evento:', error);
-      return false;
-    }
-}
+//Estas bibliotecas permiten utilizar funcionalidades asincrónicas y realizar solicitudes HTTP a través de fetch.
 
 async function obtenerLast() {
     //Las almacena el número de eventos en la db
@@ -29,6 +20,11 @@ async function obtenerLast() {
 
 exports.createEventos = async (req, res, next) => {
     try {
+
+        const fechaActual = new Date();
+        const fecha = `${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}`;
+        const hora = `${fechaActual.getHours()}:${fechaActual.getMinutes()}`;
+
         // Obtener el último valor. Obtener la longitud de algún tipo de lista de eventos.
         const last = await obtenerLast();
         let count = await Eventos.countDocuments();
@@ -44,33 +40,37 @@ exports.createEventos = async (req, res, next) => {
         console.log(last);
 
         // Obtener el ID del evento desde la solicitud HTTP
-        const id_evento = req.body.id_evento;
+        //const id_evento = req.body.id_evento;
+        const id_evento = faker.datatype.number({ min: 1000000000, max: 9999999999 });
         console.log("ID Evento: " + id_evento);
 
         // Crear un nuevo objeto de evento
         const newEvento = {
             id_evento: id_evento + count, // Combina el ID del evento con count
             count: count,
-            data_start: req.body.data_start,
-            hour_start: req.body.hour_start,
+            data_start: fecha,
+            hour_start: hora,
             data_end: req.body.data_end,
             hour_end: req.body.hour_end,
             id_actividad: req.body.id_actividad,
             id_estudiante: req.body.id_estudiante,
-            check_download: req.body.check_download,
-            check_inicio: req.body.check_inicio,
+            //check_download: req.body.check_download,
+            check_download: 0,
+            check_inicio: 0,
             check_fin: req.body.check_fin,
             check_answer: req.body.check_answer,
-            count_video: req.body.count_video,
+            //count_video: req.body.count_video,
+            count_video: 0,
             check_video: req.body.check_video,
             check_document: req.body.check_document,
             check_a1: req.body.check_a1,
             check_a2: req.body.check_a2,
             check_a3: req.body.check_a3,
-            check_profile: req.body.check_profile,
-            check_Ea1: req.body.check_Ea1,
-            check_Ea2: req.body.check_Ea2,
-            check_Ea3: req.body.check_Ea3,
+            //check_profile: req.body.check_profile,
+            check_profile: 0,
+            //check_Ea1: req.body.check_Ea1,
+            //check_Ea2: req.body.check_Ea2,
+            //check_Ea3: req.body.check_Ea3,
             oculto: 0,
         };
 
@@ -302,6 +302,241 @@ exports.deleteEvento = async (req, res, next) => {
       return res.status(500).send('Server Error');
     }
   };
+
+  /** @function uploadEventoActual */
+// Upload specific elements for Eventos in MongoDB.
+
+exports.uploadEventoActual = async (req, res) => {
+    try {
+        const eventoData = {
+            id_actividad: req.body.id_actividad,
+            id_estudiante: req.body.id_estudiante,
+        };
+
+        const eventoNewData = {
+            data_end: req.body.data_end,
+            hour_end: req.body.hour_end,
+            check_download: req.body.check_download,
+            check_inicio: req.body.check_inicio,
+            check_fin: req.body.check_fin,
+            check_answer: req.body.check_answer,
+            count_video: req.body.count_video,
+            check_video: req.body.check_video,
+            check_document: req.body.check_document,
+            check_a1: req.body.check_a1,
+            check_a2: req.body.check_a2,
+            check_a3: req.body.check_a3,
+            check_profile: req.body.check_profile,
+            /*check_Ea1: req.body.check_Ea1,
+            check_Ea2: req.body.check_Ea2,
+            check_Ea3: req.body.check_Ea3,*/
+            oculto: req.body.oculto,
+        };
+
+        const paso = parseInt(req.body.paso);
+
+        let mensajeRespuesta = '';
+
+        switch (paso) {
+            case 1:
+                // Paso 1: Elegir una actividad, cuando decide entrar a práctica en casa
+                console.log('Estoy en el switch paso 1');
+
+                // Incrementa check_inicio en 1 para el evento actual
+                const resultadoPaso1 = await Eventos.findOneAndUpdate(
+                    { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+                    { $inc: { check_inicio: 1 } },
+                    { new: true }
+                );
+
+                // Verifica si se actualizó algún documento
+                if (!resultadoPaso1) {
+                    mensajeRespuesta = 'Evento no encontrado';
+                } else {
+                    mensajeRespuesta = 'Campo check_inicio actualizado correctamente.';
+                }
+                break;
+            case 2:
+                // Paso 2: Ya en práctica en casa DOWNLOAD
+
+                console.log('Estoy en el switch paso 2');
+
+                const resultadoPaso2 = await Eventos.findOneAndUpdate(
+                    { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+                    { $inc: { check_download: 1 } },
+                    { new: true }
+                );
+
+                if (!resultadoPaso2) {
+                    mensajeRespuesta = 'Evento no encontrado';
+                } else {
+                    mensajeRespuesta = 'Campo check_download actualizado correctamente.';
+                }
+                break;
+
+                //eventoNewData.check_download = eventoNewData.check_download + 1;
+                //eventoNewData.count_video = 0;
+                //eventoNewData.check_video = 0;
+                break;
+            case 3:
+
+                console.log('Estoy en el switch paso 3');
+
+                const resultadoPaso3 = await Eventos.findOneAndUpdate(
+                    { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+                    { $inc: { count_video: 1 } },
+                    { new: true }
+                );
+
+                if (!resultadoPaso3) {
+                    mensajeRespuesta = 'Evento no encontrado';
+                } else {
+                    mensajeRespuesta = 'Campo count_video actualizado correctamente.';
+                }
+                break;
+            case 4:
+
+                console.log('Estoy en el switch paso 4');
+
+                const resultadoPaso4 = await Eventos.findOneAndUpdate(
+                    { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+                    { $inc: { check_video: 1 } },
+                    { new: true }
+                );
+
+                if (!resultadoPaso4) {
+                    mensajeRespuesta = 'Evento no encontrado';
+                } else {
+                    mensajeRespuesta = 'Campo check_video actualizado correctamente.';
+                }
+                break;
+            case 5: 
+                console.log('Estoy en el switch paso 5');
+
+                const resultadoPaso5 = await Eventos.findOneAndUpdate(
+                    { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+                    { $inc: { check_answer: 1 } },
+                    { new: true }
+                );
+
+                if (!resultadoPaso5) {
+                    mensajeRespuesta = 'Evento no encontrado';
+                } else {
+                    mensajeRespuesta = 'Campo check_answer actualizado correctamente.';
+                }
+                break;
+            case 6:
+                // Paso 3: Práctica en clase
+
+                console.log('Estoy en el switch paso 6');
+
+                const resultadoPaso6 = await Eventos.findOneAndUpdate(
+                    { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+                    { $inc: { check_document: 1 } },
+                    { new: true }
+                );
+
+                if (!resultadoPaso6) {
+                    mensajeRespuesta = 'Evento no encontrado';
+                } else {
+                    mensajeRespuesta = 'Campo check_document actualizado correctamente.';
+                }
+                break;
+            case 7:
+                // Paso 4: Responder quiz
+                console.log('Estoy en el switch paso 7');
+
+                const resultadoPaso7 = await Eventos.updateOne(
+                    { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+                    { $set: { check_a1: eventoNewData.check_a1, check_a2: eventoNewData.check_a2, check_a3: eventoNewData.check_a3 } }
+                );
+
+                if (resultadoPaso7.nModified === 0) {
+                    mensajeRespuesta = 'Evento no encontrado o no modificado';
+                } else {
+                    mensajeRespuesta = 'Paso 4: Actualización realizada.';
+                }
+                break;
+            case 8:
+                // Paso 5: Realiza tu examen
+                const resultadoPaso8 = await Eventos.updateOne(
+                    { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+                    { $set: { check_a1: eventoNewData.check_a1, check_a2: eventoNewData.check_a2, check_a3: eventoNewData.check_a3 } }
+                );
+            
+                // Verifica si se actualizó algún documento y envía la respuesta al cliente
+                if (resultadoPaso8.nModified === 0) {
+                    mensajeRespuesta = 'Evento no encontrado o no modificado';
+                } else {
+                    mensajeRespuesta = 'Respuestas del examen, actualización realizada.';
+                }
+                break;
+            case 9:
+                // Paso 6: Revisa tu perfil
+                console.log('Estoy en el switch paso 9');
+
+                const resultadoPaso9 = await Eventos.findOneAndUpdate(
+                    { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+                    { $inc: { check_profile: 1 } },
+                    { new: true }
+                );
+
+                if (!resultadoPaso9) {
+                    mensajeRespuesta = 'Evento no encontrado';
+                } else {
+                    mensajeRespuesta = 'Campo check_profile actualizado correctamente.';
+                }
+                break;
+            case 10:
+                console.log('Estoy en el switch paso 9');
+
+                const fechaActual = new Date();
+                const fecha = `${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}`;
+                const hora = `${fechaActual.getHours()}:${fechaActual.getMinutes()}:${fechaActual.getSeconds()}`;
+
+                const resultadoPaso10 = await Eventos.findOneAndUpdate(
+                    { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+                    {
+                        $inc: { check_fin: 1 },
+                        $set: { data_end: fecha, hour_end: hora }
+                    },
+                    { new: true }
+                );
+
+                if (!resultadoPaso10) {
+                    mensajeRespuesta = 'Evento no encontrado';
+                } else {
+                    mensajeRespuesta = 'Campo check_fin actualizado correctamente. Fecha y hora de finalización registradas.';
+                }
+                break;
+            default:
+                mensajeRespuesta = 'Paso diferente a los registradoe, no se realizó ninguna actualización :D';
+                break;
+        }
+
+        // Actualiza el evento con el id_actividad e id_estudiante especificados
+        const resultadoUpdate = await Eventos.updateOne(
+            { id_actividad: eventoData.id_actividad, id_estudiante: eventoData.id_estudiante },
+            { $set: eventoNewData }
+        );
+
+        // Verifica si se actualizó algún documento y envía la respuesta al cliente
+        if (resultadoUpdate.nModified === 0) {
+            mensajeRespuesta = 'Evento no encontrado o no modificado';
+        }
+
+        res.json({ mensaje: mensajeRespuesta });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error del Servidor');
+    }
+};
+
+
+
+
+
+
 //id_evento	fecha	id_actividad	id_estudiante
 //check_download	check_inicio	check_fin
 //check_answer	count_video	check_video

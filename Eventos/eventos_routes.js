@@ -8,6 +8,7 @@ module.exports=(router)=> {
     router.get('/loadAllEventoForAngular', Eventos.allEventsForAngular);
     router.post('/generateMetrica', Eventos.generateMetrics);
     router.post('/uploadEvento', Eventos.uploadEvento);
+    router.post('/uploadEventoActual', Eventos.uploadEventoActual);
     router.post('/uploadEstadoEvento', Eventos.uploadEstadoEvento);
     router.post('/deleteEvento', Eventos.deleteEvento);
 }
