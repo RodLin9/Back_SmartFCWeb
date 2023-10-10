@@ -3,7 +3,9 @@
 require("dotenv").config() //Variables de entorno
 
 const express = require("express"); 
-const cors = require("cors"); 
+const cors = require("cors");
+//const passport = require('passport'); //FIXME: Eliminar dependencias y todo lo relacionado
+const session = require('express-session');
 const ping = require('ping');
 
 const estudianteRoutes = require('./Estudiantes/estudiante_routes');
@@ -21,11 +23,63 @@ const eventoRoutes = require('./Eventos/eventos_routes');
 const dbConnect = require('./config/db')
 dbConnect()
 
-
 const app = express(); 
 app.use(cors()); //Permite evitar el error de origen cruzado entre los navegadorees
 const router = express.Router();
 //require('./Estudiantes')(router);
+
+//FIXME: Aquí implementación de sessions
+
+app.use(session({
+  secret: 'process.env.SECRET_KEY', // Reemplaza con una clave secreta segura
+  resave: false,
+  saveUninitialized: true, // Establece esto en true para crear una sesión incluso si el usuario no ha iniciado sesión explícitamente
+  cookie: { secure: false } // Establece a true si estás utilizando HTTPS
+}));
+
+app.get('/dashboard', (req, res) => {
+  const userId = req.session.userId;
+  const username = req.session.username;
+
+  if (userId && username) {
+    // El usuario está autenticado, puedes mostrar el panel de control, por ejemplo
+    res.send(`Bienvenido, usuario ID ${userId}, nombre de usuario: ${username}`);
+  } else {
+    // El usuario no está autenticado, redirige al inicio de sesión o muestra un mensaje de error
+    res.redirect('/login'); // Redirige a la página de inicio de sesión si no hay una sesión activa
+  }
+});
+
+
+//TODO: Configura middleware de sesión y autenticación
+/*app.use(session({
+  secret: process.env.SECRET_KEY, // Usa la clave secreta de la variable de entorno
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Configura Passport para utilizar la estrategia local (puedes agregar otras estrategias si es necesario)
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    // Aquí debes escribir el código para verificar las credenciales del usuario
+    // Normalmente, verificarías el nombre de usuario y la contraseña en tu base de datos
+    // Si las credenciales son válidas, llama a done(null, usuario) donde "usuario" es el objeto del usuario
+    // Si las credenciales son inválidas, llama a done(null, false)
+  }
+));
+
+// Serializa y deserializa el usuario (específico para Passport)
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  // Aquí debes recuperar el usuario de tu base de datos usando el "id" proporcionado
+  // Luego, llama a done(null, usuario)
+});*/
+
 
 const bodyParser = require('body-parser');
 const multipart = require('connect-multiparty');  

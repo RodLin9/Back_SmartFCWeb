@@ -51,39 +51,37 @@ exports.createEstudiante = async (req, res, next) => {
 /** @function loginEstudiante */
 // Login authEstudiante.
 
-  exports.loginEstudiante = async (req, res, next) => {
-    const estudianteData = {
-      correo_electronico: req.body.correo_electronico,
-      contrasena: req.body.contrasena
-    };
-
-    try {
-      
-      if (!estudianteData.correo_electronico || !estudianteData.contrasena) {
-        return res.status(409).send({ message: 'Los campos son requeridos' });
-      }
-  
-      const student = await Estudiante.findOne({ correo_electronico: estudianteData.correo_electronico });
-
-      if (!student) {
-        return res.status(409).send({ message: 'correo_electronico no encontrado' });
-      }
-
-      /* const passwordMatch = await bcrypt.compare(estudianteData.contrasena, student.contrasena);
-
-    if (passwordMatch) {*/
-      const resultContrasena = estudianteData.contrasena;
-
-      if (resultContrasena === student.contrasena) {
-        res.send({ student });
-      } else {
-        res.status(409).send(null);
-        console.log('Contraseña incorrecta' + passwordMatch);
-      }
-    } catch (err) {
-      res.status(500).send('Server Error');
-    }
+exports.loginEstudiante = async (req, res, next) => {
+  const estudianteData = {
+    correo_electronico: req.body.correo_electronico,
+    contrasena: req.body.contrasena
   };
+
+  try {
+    if (!estudianteData.correo_electronico || !estudianteData.contrasena) {
+      return res.status(409).send({ message: 'Los campos son requeridos' });
+    }
+
+    const student = await Estudiante.findOne({ correo_electronico: estudianteData.correo_electronico });
+
+    if (!student) {
+      return res.status(409).send({ message: 'correo_electronico no encontrado' });
+    }
+
+    // Verificar la contraseña
+    if (estudianteData.contrasena === student.contrasena) {
+      // Almacenar información en la sesión si la autenticación es exitosa
+      req.session.userId = student.id_estudiante; // Almacena el ID del estudiante en la sesión
+      req.session.email = student.correo_electronico; // Almacena el nombre de usuario en la sesión
+      res.send({ student });
+    } else {
+      res.status(409).send(null);
+      console.log('Contraseña incorrecta');
+    }
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
 
 /** @function allStudents */
   exports.allStudents = async (req, res, next) => {
