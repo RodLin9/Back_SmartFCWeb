@@ -6,6 +6,7 @@ module.exports=(router)=> {
     router.get('/loadAllcontents', ContentREA.allContent);
     router.get('/loadAllcontentsMovil', ContentREA.allContentMovilG);
     router.post('/searchContentREA', ContentREA.SearchContentREA);
+    router.post('/searchContentREAbyMateria', ContentREA.SearchContentREA_ByMateria);
     //router.get('/newLoadContentREA', ContentREA.newLoadContentREA);
     //router.post('/uploadEstadoContentREA', ContentREA.uploadEstadoContentREA);
     //router.post('/uploadURLContentREA', ContentREA.uploadURLContentREA);

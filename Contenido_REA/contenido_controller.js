@@ -122,6 +122,32 @@ exports.allContentMovil = async (req, res, next) => {
   }
 };
 
+exports.SearchContentREA_ByMateria = async (req, res, next) => {
+  const contentData = {
+      id_materia: req.body.id_materia,
+  };
+
+  try {
+      const content = await ContentREA.find({ id_materia: contentData.id_materia });
+
+      if (content.length === 0) {
+          return res.status(404).send({ message: "No se encontró contenido REA para la materia especificada" });
+      }
+
+      // Formatear la respuesta como un arreglo de objetos directamente
+      const contentArray = content.map((item) => {
+          // Realizar la transformación de la URL en urlrepositorio
+          const ipAddress = process.env.IP_ADDRESS_2;
+          const urlSinPrefijo = item.urlrepositorio.replace('http://localhost:3000/public/repositorio/', '');
+          item.urlrepositorio = `http://${ipAddress}:3000/repositorio/${urlSinPrefijo}`;
+          return item.toObject();
+      });
+
+      res.send(contentArray); // Enviar el arreglo directamente, sin el campo "content"
+  } catch (err) {
+      res.status(500).send(`Error del servidor: ${err}`);
+  }
+};
 ///** @function newLoadContentREA */
 // Load all the specific elements for content in mongo. 
 
