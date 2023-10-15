@@ -4,7 +4,7 @@ const Duda = require('./dudas_dao');
 /** @function createDuda */
 // Create the specific elements for Duda in mongo. 
 
-async function generarIdDuda() {
+/*async function generarIdDuda() {
     const secuencia = await Secuencia.findOneAndUpdate(
         { nombre: 'id_duda' }, // Nombre de la secuencia para id_duda
         { $inc: { valor: 1 } },
@@ -12,35 +12,75 @@ async function generarIdDuda() {
     );
 
     return secuencia.valor;
+}*/
+
+let dudaCounter = 0;
+let id_duda = 0;
+
+/** @function getCurrentDudaCount */
+// Obtiene el número actual de dudas en mongo
+async function getCurrentDudaCount() {
+  const currentCount = await Duda.countDocuments();
+  //console.log('El número total de dudas es:', currentCount);
+  return currentCount;
 }
 
+/** @function createDuda */
+// Crea los elementos específicos para las dudas en mongo.
 exports.createDuda = async (req, res, next) => {
-    try {
-      // Paso 1: Consulta el documento con el id_duda más alto
-      const lastDuda = await Duda.findOne({}, { id_duda: 1 }).sort({ id_duda: -1 });
-  
-      // Paso 2: Obtiene el valor del id_duda más alto o usa 0 si no hay dudas existentes
-      const lastIdDuda = lastDuda ? lastDuda.id_duda : 0;
-  
-      // Paso 3: Calcula el nuevo id_duda sumando 1 al último valor
-      const newIdDuda = lastIdDuda + 1;
-  
-      const newDuda = {
-        id_duda: newIdDuda,
-        id_actividad: req.body.id_actividad,
-        id_estudiante: req.body.id_estudiante,
-        pregunta: req.body.pregunta,
-        respuesta: "",
-        estado_duda: 0,
-      };
-  
-      const duda = await Duda.create(newDuda);
-      res.send({ message: "Duda creada exitosamente", duda });
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Server error');
+  let x = 0;
+  try {
+    const requiredFields = ['id_actividad', 'id_estudiante', 'pregunta'];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ error: `El campo '${field}' no puede estar vacío.` });
+      }
     }
-  };
+
+    const id_actividad = req.body.id_actividad;
+    // console.log('El id_actividad es: ' + id_actividad);
+
+    const currentCount = await getCurrentDudaCount(); // Obtener el número actual de dudas
+
+    dudaCounter = currentCount + 1;
+
+    id_duda = parseInt(`${id_actividad}${dudaCounter}`);
+    // console.log('El id_duda es: ' + id_duda);
+
+    let isUnique = false;
+
+    while (!isUnique) {
+      const existingDuda = await Duda.findOne({ id_duda: id_duda }); // Consultar si ya existe una duda con el mismo id_duda
+      // x = x + 1;
+      // console.log('Número de veces en el while', x);
+
+      if (existingDuda) {
+        dudaCounter++; // Si el id_duda ya existe, incrementa dudaCounter y vuelve a intentar
+        id_duda = parseInt(`${id_actividad}${dudaCounter}`);
+      } else {
+        isUnique = true;
+      }
+    }
+
+    const newDuda = {
+      id_duda: id_duda,
+      id_actividad: req.body.id_actividad,
+      id_estudiante: req.body.id_estudiante,
+      pregunta: req.body.pregunta,
+      respuesta: "",
+      estado_duda: 0,
+    };
+
+    const duda = await Duda.create(newDuda);
+    console.log('Duda creada exitosamente:', duda);
+    res.status(201).json({ duda: duda });
+  } catch (err) {
+    console.error('Error al crear la duda:', err);
+    res.status(500).json({ error: 'No se ha podido crear la duda.' });
+  }
+};
+
 /** @function loadDuda */
 // Load the specific elements for Duda in mongo. 
 
