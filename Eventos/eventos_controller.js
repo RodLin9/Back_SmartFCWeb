@@ -1,89 +1,112 @@
 const Eventos = require('./eventos_dao'); //Se importa el evento definido en eventos_dao.js
 var async = require('express-async-await')
 const fetch = require('node-fetch');
-const { faker } =require('@faker-js/faker');
+//const { faker } =require('@faker-js/faker');
 
-//Estas bibliotecas permiten utilizar funcionalidades asincrónicas y realizar solicitudes HTTP a través de fetch.
+/** @function getCurrentEventCount */
+// Get the actual number of events in mongo
 
-async function obtenerLast() {
-    //Las almacena el número de eventos en la db
-    const last = await fetch('http://0.0.0.0:3001/loadAllEvento'); //realiza una solicitud HTTP GET a la URL 'http://0.0.0.0:3000/loadAllEvento' utilizando fetch.
-    //Se intenta obtener eventos desde una ruta específica en tu servidor Express.
-    const data = await last.json(); //Se espera la respuesta de la solicitud utilizando await last.json(). Esto permite convertir la respuesta en un objeto JavaScript (JSON) que puede ser manipulado en tu código.
-    console.log("Comprobando cuantos item tiene")
-    console.log(data.length); //Imprime en la consola el número de elementos en el objeto data que contiene la respuesta de la solicitud.
-    console.log()
-    return data.length; //Devuelve la longitud de data, que representa la cantidad de eventos obtenidos desde la solicitud HTTP.
+async function getCurrentEventCount() {
+  const currentCount = await Eventos.countDocuments();
+  //console.log('El número total de eventos es:', currentCount);
+  return currentCount;
 }
-/** @function createEventos */
-// Create the specific elements for Eventos in mongo. 
 
-exports.createEventos = async (req, res, next) => {
+/** @function createEvento */
+// Create the specific elements for Eventos in mongo.
+
+exports.createEvento = async (req, res, next) => {
     try {
-
+        //console.log('Se crea el evento');
         const fechaActual = new Date();
         const fecha = `${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}`;
         const hora = `${fechaActual.getHours()}:${fechaActual.getMinutes()}`;
+        const id_estudiante = req.body.id_estudiante;
+        
+        // Obtener el último valor de ID de evento en la base de datos
+        const currentCount = await getCurrentEventCount() + 1;
+        
+        // Incrementar el contador
+        let eventoCounter = 0;
+        
+        let isUniqueC = false;
+        let count = currentCount + 100;
+        
+        while (!isUniqueC) {
+            try {
+                // Consultar si ya existe un evento con el mismo valor de count
+                const existingCount = await Eventos.findOne({ count: count });
 
-        // Obtener el último valor. Obtener la longitud de algún tipo de lista de eventos.
-        const last = await obtenerLast();
-        let count = await Eventos.countDocuments();
-
-        if (count === 0) {
-            count = 1; // Establece count en 1 si es el primer evento
-            console.log('Si es primer evento');
-        } else {
-            count++; // Incrementa count si no es el primer evento
+                if (existingCount) {
+                    eventoCounter++;
+                    count = currentCount + eventoCounter;
+                } else {
+                    isUniqueC = true;
+                }
+            } catch (error) {
+                console.error('Error en el bucle de count:', error);
+                res.status(500).json({ error: 'Error al crear el evento.' });
+            }
         }
 
-        console.log("Último encontrado");
-        console.log(last);
+        let isUnique = false;
+        let id_evento = `${id_estudiante}${count}`;
 
-        // Obtener el ID del evento desde la solicitud HTTP
-        //const id_evento = req.body.id_evento;
-        const id_evento = faker.datatype.number({ min: 1000000000, max: 9999999999 });
-        console.log("ID Evento: " + id_evento);
+        while (!isUnique) {
+            try {
+                // Consultar si ya existe un evento con el mismo id_evento
+                const existingEvento = await Eventos.findOne({ id_evento: id_evento });
 
-        // Crear un nuevo objeto de evento
-        const newEvento = {
-            id_evento: id_evento + count, // Combina el ID del evento con count
-            count: count,
-            data_start: fecha,
-            hour_start: hora,
-            data_end: req.body.data_end,
-            hour_end: req.body.hour_end,
-            id_actividad: req.body.id_actividad,
-            id_estudiante: req.body.id_estudiante,
-            //check_download: req.body.check_download,
-            check_download: 0,
-            check_inicio: 0,
-            check_fin: req.body.check_fin,
-            check_answer: req.body.check_answer,
-            //count_video: req.body.count_video,
-            count_video: 0,
-            check_video: req.body.check_video,
-            check_document: req.body.check_document,
-            check_a1: req.body.check_a1,
-            check_a2: req.body.check_a2,
-            check_a3: req.body.check_a3,
-            //check_profile: req.body.check_profile,
-            check_profile: 0,
-            //check_Ea1: req.body.check_Ea1,
-            //check_Ea2: req.body.check_Ea2,
-            //check_Ea3: req.body.check_Ea3,
-            oculto: 0,
-        };
-
-        // Crear el nuevo evento usando async/await
-        const evento = await Eventos.create(newEvento);
-        console.log('EL LAST COUNT ES: ' + count);
-
-        res.send(evento);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Error del Servidor');
+                if (existingEvento) {
+                    eventoCounter++; // Si el id_evento ya existe, incrementa eventoCounter y vuelve a intentar
+                    id_evento = `${id_estudiante}${count + eventoCounter}`;
+                } else {
+                    id_evento = `${id_evento}${currentCount}`;
+                    isUnique = true;
+                }
+            } catch (error) {
+                console.error('Error en el bucle de id_evento:', error);
+                res.status(500).json({ error: 'Error al crear el evento.' });
+            }
+        }
+  
+      console.log('El id_evento es', id_evento);
+  
+      const newEvento = {
+        id_evento: id_evento,
+        count: count,
+        data_start: fecha,
+        hour_start: hora,
+        data_end: req.body.data_end,
+        hour_end: req.body.hour_end,
+        id_actividad: req.body.id_actividad,
+        id_estudiante: id_estudiante,
+        check_download: 0,
+        check_inicio: 0,
+        check_fin: req.body.check_fin,
+        check_answer: req.body.check_answer,
+        count_video: 0,
+        check_video: req.body.check_video,
+        check_document: req.body.check_document,
+        check_a1: req.body.check_a1,
+        check_a2: req.body.check_a2,
+        check_a3: req.body.check_a3,
+        check_profile: 0,
+        //check_Ea1: req.body.check_Ea1,
+        //check_Ea2: req.body.check_Ea2,
+        //check_Ea3: req.body.check_Ea3,
+        oculto: 0,
+      };
+  
+      // Crear el nuevo evento usando async/await
+      const evento = await Eventos.create(newEvento);
+  
+      res.send(evento);
+    } catch (err) {
+      console.error('Error al crear el evento:', err);
+      res.status(500).json({ error: 'No se ha podido registrar el evento.' });
     }
-};
+  };
 
 /** @function loadEvento */
 // Load the specific elements for Eventos in mongo.
@@ -488,7 +511,7 @@ exports.uploadEventoActual = async (req, res) => {
                 }
                 break;
             case 10:
-                console.log('Estoy en el switch paso 9');
+                console.log('Estoy en el switch paso 10');
 
                 const fechaActual = new Date();
                 const fecha = `${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}`;
@@ -531,11 +554,6 @@ exports.uploadEventoActual = async (req, res) => {
         res.status(500).send('Error del Servidor');
     }
 };
-
-
-
-
-
 
 //id_evento	fecha	id_actividad	id_estudiante
 //check_download	check_inicio	check_fin
