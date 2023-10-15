@@ -4,12 +4,24 @@ const jwt = require('jsonwebtoken'); //TODO: jsonwebtoken para la autenticación
 const bcrypt =require('bcryptjs'); //TODO: para la encriptación de contraseñas.
 const SECRET_KEY = 'secretkey1234' //TODO: clave secreta SECRET_KEY para el módulo jsonwebtoken que se utiliza para firmar y verificar tokens.
 
+// Crear un contador global para el número de estudiantes
+let studentCounter = 0;
+let id_estudiante = 0;
+
+/** @function getCurrentStudentCount */
+// Get the actual number of students in mongo
+async function getCurrentStudentCount() {
+  const currentCount = await Estudiante.countDocuments();
+  console.log('El número total de estudiantes es:', currentCount);
+  return currentCount;
+}
+
 /** @function createEstudiante */
 // Create the specific elements for authE in mongo. 
 
 exports.createEstudiante = async (req, res, next) => {
+  let x = 0;
   try {
-    // Verificar si los campos obligatorios están presentes y no son vacíos
     const requiredFields = ['nombre_estudiante', 'apellido_estudiante', 'grado_estudiante', 'id_colegio', 'contrasena', 'correo_electronico'];
 
     for (const field of requiredFields) {
@@ -18,15 +30,39 @@ exports.createEstudiante = async (req, res, next) => {
       }
     }
 
-    // Verificar si el correo electrónico ya está registrado
     const existingStudent = await Estudiante.findOne({ correo_electronico: req.body.correo_electronico });
 
     if (existingStudent) {
       return res.status(400).json({ error: 'El correo electrónico ya está registrado.' });
     }
 
+    const id_colegio = req.body.id_colegio;
+    //console.log('El id_colegio es: ' + id_colegio);
+
+    const currentCount = await getCurrentStudentCount(); // Obtener el número actual de estudiantes
+
+    studentCounter = currentCount + 1;
+
+    id_estudiante = parseInt(`${id_colegio}${studentCounter}`);
+    //console.log('El id_estudiante es: ' + id_estudiante);
+
+    let isUnique = false;
+
+    while (!isUnique) {
+      const existingStudent = await Estudiante.findOne({ id_estudiante: id_estudiante }); // Consultar si ya existe un estudiante con el mismo id_estudiante
+      //x = x + 1 ;
+      //console.log('Número de veces en el while', x);
+
+      if (existingStudent) {
+        studentCounter++; // Si el id_estudiante ya existe, incrementa studentCounter y vuelve a intentar
+        id_estudiante = parseInt(`${id_colegio}${studentCounter}`);
+      } else {
+        isUnique = true;
+      }
+    }
+
     const newEstudiante = {
-      id_estudiante: faker.datatype.number({ min: 1000000000, max: 9999999999 }),
+      id_estudiante: id_estudiante,
       tipo_usuario: 1,
       nombre_estudiante: req.body.nombre_estudiante,
       apellido_estudiante: req.body.apellido_estudiante,
@@ -46,7 +82,6 @@ exports.createEstudiante = async (req, res, next) => {
     res.status(500).json({ error: 'No se ha podido registrar el estudiante.' });
   }
 };
-
 
 /** @function loginEstudiante */
 // Login authEstudiante.
