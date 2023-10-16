@@ -11,4 +11,6 @@ module.exports=(router)=> {
     router.post('/uploadEventoActual', Eventos.uploadEventoActual);
     router.post('/uploadEstadoEvento', Eventos.uploadEstadoEvento);
     router.post('/deleteEvento', Eventos.deleteEvento);
+    router.post('/progreso', Eventos.progreso);
+
 }

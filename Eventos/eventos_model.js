@@ -93,7 +93,7 @@ const eventoSchema = new Schema({
         type:Number,
         trim: true
     },
-    /*check_Ea1:{
+    check_Ea1:{
         type:Number,
         trim: true
     },
@@ -104,7 +104,11 @@ const eventoSchema = new Schema({
     check_Ea3:{
         type:Number,
         trim: true
-    },*/
+    },
+    progreso:{ //Esto?
+        type:Number,
+        trim: true
+    },
     oculto:{ //Esto?
         type:Number,
         trim: true
