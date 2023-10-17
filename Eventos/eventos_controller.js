@@ -617,6 +617,9 @@ exports.uploadEventoActual = async (req, res) => {
 
 //exports.uploadEventoActual = async (req, res) => {
 
+  /** @function progreso */
+// Upload specific elements for Eventos in MongoDB.
+
 exports.progreso = async (req, res) => {
     try {
         const id_estudiante = req.body.id_estudiante; // Extrae el id_estudiante del cuerpo de la solicitud
@@ -652,6 +655,9 @@ exports.progreso = async (req, res) => {
         res.status(500).send('Error del Servidor');
     }
 };
+
+  /** @function loadUltimoEvento */
+// Upload specific elements for Eventos in MongoDB.
 
 exports.loadUltimoEvento = async (req, res) => {
     try {
