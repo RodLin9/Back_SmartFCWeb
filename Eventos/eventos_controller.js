@@ -470,8 +470,6 @@ exports.uploadEventoActual = async (req, res) => {
                 eventoMayorCount.check_Ea1 = req.body.check_Ea1;
                 eventoMayorCount.check_Ea2 = req.body.check_Ea2;
                 eventoMayorCount.check_Ea3 = req.body.check_Ea3;
-                eventoMayorCount.check_fin = 1;
-                eventoMayorCount.progreso = 1;
                 eventoMayorCount.data_end = fecha;
                 eventoMayorCount.hour_end = hora;
 
@@ -492,6 +490,21 @@ exports.uploadEventoActual = async (req, res) => {
                 await eventoMayorCount.save();
 
                 mensajeRespuesta = 'Campos check_profile, hour_end y progreso actualizados correctamente.';
+                break;
+
+            case 8:
+                // Paso 8: Finalizar actividad
+                // check_profile // data_end // hour_end //
+                console.log('Estoy en el switch paso 8');
+
+                eventoMayorCount.check_fin = 1;
+                eventoMayorCount.progreso = 1;
+                eventoMayorCount.data_end = fecha;
+                eventoMayorCount.hour_end = hora;
+
+                await eventoMayorCount.save();
+
+                mensajeRespuesta = 'Campos check_fin, progreso, hour_end y data_end actualizados correctamente.';
                 break;
 
             default:
