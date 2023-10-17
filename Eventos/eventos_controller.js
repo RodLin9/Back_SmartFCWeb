@@ -28,13 +28,112 @@ async function EventoConMayorCount (id_actividad, id_estudiante) {
                 eventoConMayorCount = eventos[i];
             }
         }
-
+        console.log('Evento con mayor count encontrado:', eventoConMayorCount);
         return eventoConMayorCount;
     } catch (err) {
         console.error(err);
         return null; // O maneja el error de alguna otra manera apropiada
     }
 };
+
+async function createEventoFunction(id_actividad, id_estudiante) {
+    console.log('Estoy en la función de crear eventos');
+    try {
+        // Obtener la fecha y hora actuales
+        const fechaActual = new Date();
+        const fecha = `${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}`;
+        const hora = `${fechaActual.getHours()}:${fechaActual.getMinutes()}:${fechaActual.getSeconds()}`;
+
+        // Obtener el último valor de ID de evento en la base de datos
+        const currentCount = await getCurrentEventCount() + 1;
+
+        // Incrementar el contador
+        let eventoCounter = 0;
+
+        let isUniqueC = false;
+        let count = currentCount + 100;
+
+        while (!isUniqueC) {
+            try {
+                // Consultar si ya existe un evento con el mismo valor de count
+                const existingCount = await Eventos.findOne({ count: count });
+
+                if (existingCount) {
+                    eventoCounter++;
+                    count = currentCount + eventoCounter;
+                } else {
+                    isUniqueC = true;
+                }
+            } catch (error) {
+                console.error('Error en el bucle de count:', error);
+                // Maneja el error de alguna otra manera apropiada
+            }
+        }
+
+        let isUnique = false;
+        let id_evento = `${id_estudiante}${count}`;
+
+        while (!isUnique) {
+            try {
+                // Consultar si ya existe un evento con el mismo id_evento
+                const existingEvento = await Eventos.findOne({ id_evento: id_evento });
+
+                if (existingEvento) {
+                    eventoCounter++;
+                    id_evento = `${id_estudiante}${count + eventoCounter}`;
+                } else {
+                    id_evento = `${id_evento}${currentCount}`;
+                    isUnique = true;
+                }
+            } catch (error) {
+                console.error('Error en el bucle de id_evento:', error);
+                // Maneja el error de alguna otra manera apropiada
+            }
+        }
+
+        console.log('El id_evento es', id_evento);
+
+        // Crear el nuevo evento
+        const newEvento = {
+            id_evento: id_evento,
+            count: count,
+            data_start: fecha,
+            hour_start: hora,
+            data_end: null, // Usar la fecha generada anteriormente
+            hour_end: null, // Usar la hora generada anteriormente
+            id_actividad: id_actividad,
+            id_estudiante,
+            check_download: 0,
+            check_inicio: 1,
+            check_fin: 0,
+            check_answer: null,
+            count_video: 0,
+            check_video: null,
+            check_document: null,
+            check_a1: "",
+            check_a2: "",
+            check_a3: "",
+            a_score: 0,
+            Ea_score: 0,
+            check_profile: 0,
+            check_Ea1: "",
+            check_Ea2: "",
+            check_Ea3: "",
+            Ea_score: 0,
+            progreso: 0,
+            oculto: 0,
+        };
+
+        // Crear el nuevo evento usando async/await
+        const evento = await Eventos.create(newEvento);
+
+        return evento; // Devolver el evento creado en lugar de enviarlo como respuesta
+    } catch (err) {
+        console.error('Error al crear el evento:', err);
+        // Maneja el error de alguna otra manera apropiada
+        return null; // Devuelve null o maneja el error según tus necesidades
+    }
+}
 
 /** @function createEvento */
 // Create the specific elements for Eventos in mongo.
@@ -107,7 +206,7 @@ exports.createEvento = async (req, res, next) => {
         id_estudiante: id_estudiante,
         check_download: 0,
         check_inicio: 1,
-        check_fin: null,
+        check_fin: 0,
         check_answer: null,
         count_video: 0,
         check_video: null,
@@ -115,10 +214,13 @@ exports.createEvento = async (req, res, next) => {
         check_a1: "",
         check_a2: "",
         check_a3: "",
+        a_score: 0,
+        Ea_score: 0,
         check_profile: 0,
         check_Ea1: "",
         check_Ea2: "",
         check_Ea3: "",
+        Ea_score: 0,
         progreso: 0,
         oculto: 0,
       };
@@ -289,10 +391,12 @@ exports.uploadEvento = async (req, res) => {
             check_a1: req.body.check_a1,
             check_a2: req.body.check_a2,
             check_a3: req.body.check_a3,
+            a_score: req.body.a_score,
             check_profile: req.body.check_profile,
             check_Ea1: req.body.check_Ea1,
             check_Ea2: req.body.check_Ea2,
             check_Ea3: req.body.check_Ea3,
+            Ea_score: req.body.Ea_score,
             oculto: req.body.oculto
         };
 
@@ -380,6 +484,11 @@ exports.uploadEventoActual = async (req, res) => {
         const fechaActual = new Date();
         const fecha = `${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}`;
         const hora = `${fechaActual.getHours()}:${fechaActual.getMinutes()}:${fechaActual.getSeconds()}`;
+
+        if (!eventoMayorCount) {
+            console.log('Estoy en el if de eventoMayorCount')
+            eventoMayorCount = await createEventoFunction(eventoData.id_actividad, eventoData.id_estudiante);
+        }
 
         switch (paso) {
             case 1:
@@ -544,12 +653,11 @@ exports.progreso = async (req, res) => {
     }
 };
 
-/*exports.progreso = async (req, res) => {
+exports.loadUltimoEvento = async (req, res) => {
     try {
         const id_actividad = req.body.id_actividad;
         const id_estudiante = req.body.id_estudiante;
 
-        // Busca todos los eventos que tengan el mismo id_actividad e id_estudiante
         const eventos = await Eventos.find({ id_actividad, id_estudiante });
 
         if (!eventos || eventos.length === 0) {
@@ -564,12 +672,12 @@ exports.progreso = async (req, res) => {
             }
         }
 
-        res.json({ evento: eventoConMayorCount });
+        res.json([eventoConMayorCount]);
     } catch (err) {
         console.error(err);
         res.status(500).send('Error del Servidor');
     }
-};*/
+};
 
 //id_evento	fecha	id_actividad	id_estudiante
 //check_download	check_inicio	check_fin
