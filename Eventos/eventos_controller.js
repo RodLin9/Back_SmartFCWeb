@@ -28,7 +28,7 @@ async function EventoConMayorCount (id_actividad, id_estudiante) {
                 eventoConMayorCount = eventos[i];
             }
         }
-        console.log('Evento con mayor count encontrado:', eventoConMayorCount);
+        //console.log('Evento con mayor count encontrado:', eventoConMayorCount);
         return eventoConMayorCount;
     } catch (err) {
         console.error(err);
@@ -214,21 +214,21 @@ exports.createEvento = async (req, res, next) => {
         check_a1: "",
         check_a2: "",
         check_a3: "",
-        a_score: 0,
-        Ea_score: 0,
+        score_a: 0,
         check_profile: 0,
         check_Ea1: "",
         check_Ea2: "",
         check_Ea3: "",
-        Ea_score: 0,
+        score_Ea: 0,
         progreso: 0,
         oculto: 0,
       };
   
       // Crear el nuevo evento usando async/await
       const evento = await Eventos.create(newEvento);
-  
+      
       res.send(evento);
+      
     } catch (err) {
       console.error('Error al crear el evento:', err);
       res.status(500).json({ error: 'No se ha podido registrar el evento.' });
@@ -471,9 +471,11 @@ exports.uploadEventoActual = async (req, res) => {
             check_a1: req.body.check_a1,
             check_a2: req.body.check_a2,
             check_a3: req.body.check_a3,
+            score_a: req.body.score_a,
             check_Ea1: req.body.check_Ea1,
             check_Ea2: req.body.check_Ea2,
-            check_Ea3: req.body.check_Ea3
+            check_Ea3: req.body.check_Ea3,
+            score_Ea: req.body.score_Ea
         };
 
         // Llama a la función getEventoConMayorCount directamente
@@ -562,12 +564,13 @@ exports.uploadEventoActual = async (req, res) => {
                 eventoMayorCount.check_a1 = req.body.check_a1 || null;
                 eventoMayorCount.check_a2 = req.body.check_a2 || null;
                 eventoMayorCount.check_a3 = req.body.check_a3 || null;
+                eventoMayorCount.score_a = req.body.score_a || 0;
                 eventoMayorCount.data_end = fecha;
                 eventoMayorCount.hour_end = hora;
 
                 await eventoMayorCount.save();
 
-                mensajeRespuesta = 'Campos check_a1, check_a2 y check_a3 actualizados correctamente.';
+                mensajeRespuesta = 'Campos score_a, check_a1, check_a2 y check_a3 actualizados correctamente.';
                 break;
 
             case 6:
@@ -579,6 +582,7 @@ exports.uploadEventoActual = async (req, res) => {
                 eventoMayorCount.check_Ea1 = req.body.check_Ea1 || null;
                 eventoMayorCount.check_Ea2 = req.body.check_Ea2 || null;
                 eventoMayorCount.check_Ea3 = req.body.check_Ea3 || null;
+                eventoMayorCount.score_Ea = req.body.score_Ea || 0;
                 eventoMayorCount.check_fin = 1;
                 eventoMayorCount.progreso = 1;
                 eventoMayorCount.data_end = fecha;
@@ -586,7 +590,7 @@ exports.uploadEventoActual = async (req, res) => {
 
                 await eventoMayorCount.save();
 
-                mensajeRespuesta = 'Campos check_fin, progreso, check_Ea1, check_Ea2 y check_Ea3 actualizados correctamente.';
+                mensajeRespuesta = 'Campos check_fin, score_Ea, progreso, check_Ea1, check_Ea2 y check_Ea3 actualizados correctamente.';
                 break;
 
             case 7:
@@ -616,6 +620,35 @@ exports.uploadEventoActual = async (req, res) => {
 };
 
 //exports.uploadEventoActual = async (req, res) => {
+
+  /** @function loadUltimoEvento */
+// Upload specific elements for Eventos in MongoDB.
+
+exports.loadUltimoEvento = async (req, res) => {
+    try {
+        const id_actividad = req.body.id_actividad;
+        const id_estudiante = req.body.id_estudiante;
+
+        const eventos = await Eventos.find({ id_actividad, id_estudiante });
+
+        if (!eventos || eventos.length === 0) {
+            return res.status(404).json({ mensaje: 'No se encontraron eventos para esta actividad y estudiante' });
+        }
+
+        // Encuentra el evento con el valor de 'count' más alto
+        let eventoConMayorCount = eventos[0];
+        for (let i = 1; i < eventos.length; i++) {
+            if (eventos[i].count > eventoConMayorCount.count) {
+                eventoConMayorCount = eventos[i];
+            }
+        }
+
+        res.json([eventoConMayorCount]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error del Servidor');
+    }
+};
 
   /** @function progreso */
 // Upload specific elements for Eventos in MongoDB.
@@ -656,34 +689,7 @@ exports.progreso = async (req, res) => {
     }
 };
 
-  /** @function loadUltimoEvento */
-// Upload specific elements for Eventos in MongoDB.
 
-exports.loadUltimoEvento = async (req, res) => {
-    try {
-        const id_actividad = req.body.id_actividad;
-        const id_estudiante = req.body.id_estudiante;
-
-        const eventos = await Eventos.find({ id_actividad, id_estudiante });
-
-        if (!eventos || eventos.length === 0) {
-            return res.status(404).json({ mensaje: 'No se encontraron eventos para esta actividad y estudiante' });
-        }
-
-        // Encuentra el evento con el valor de 'count' más alto
-        let eventoConMayorCount = eventos[0];
-        for (let i = 1; i < eventos.length; i++) {
-            if (eventos[i].count > eventoConMayorCount.count) {
-                eventoConMayorCount = eventos[i];
-            }
-        }
-
-        res.json([eventoConMayorCount]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error del Servidor');
-    }
-};
 
 //id_evento	fecha	id_actividad	id_estudiante
 //check_download	check_inicio	check_fin
