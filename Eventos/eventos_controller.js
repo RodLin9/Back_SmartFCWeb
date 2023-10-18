@@ -1,7 +1,7 @@
-const Eventos = require('./eventos_dao'); //Se importa el evento definido en eventos_dao.js
+const Eventos = require('./eventos_dao');
+const ActivitiesController = require('../activities/activities_controller');
 var async = require('express-async-await')
 const fetch = require('node-fetch');
-//const { faker } =require('@faker-js/faker');
 
 /** @function getCurrentEventCount */
 // Get the actual number of events in mongo
@@ -47,7 +47,6 @@ async function createEventoFunction(id_actividad, id_estudiante) {
         // Obtener el último valor de ID de evento en la base de datos
         const currentCount = await getCurrentEventCount() + 1;
 
-        // Incrementar el contador
         let eventoCounter = 0;
 
         let isUniqueC = false;
@@ -224,7 +223,6 @@ exports.createEvento = async (req, res, next) => {
         oculto: 0,
       };
   
-      // Crear el nuevo evento usando async/await
       const evento = await Eventos.create(newEvento);
       
       res.send(evento);
@@ -655,23 +653,20 @@ exports.loadUltimoEvento = async (req, res) => {
 
 exports.progreso = async (req, res) => {
     try {
-        const id_estudiante = req.body.id_estudiante; // Extrae el id_estudiante del cuerpo de la solicitud
+        const id_estudiante = req.body.id_estudiante;
 
-        // Primero, busca todos los eventos con el mismo id_estudiante
-        const eventosPorEstudiante = await Eventos.find({ id_estudiante }); // Usa la variable id_estudiante en la consulta
+        const eventosPorEstudiante = await Eventos.find({ id_estudiante });
 
         if (!eventosPorEstudiante || eventosPorEstudiante.length === 0) {
-            return res.status(404).json({ mensaje: 'No se encontraron eventos para este estudiante' });
+            return res.status(404).json({ mensaje: 'Debes empezar una actividad primero para poder ver tu progreso' });
         }
 
-        // Se crea un nuevo mapa llamado eventosAgrupados para almacenar los eventos agrupados. Un mapa es una estructura de datos que permite asociar claves (en este caso, id_actividad) con valores (eventos).
         const eventosAgrupados = new Map();
 
         for (const evento of eventosPorEstudiante) {
             if (!eventosAgrupados.has(evento.id_actividad)) {
                 eventosAgrupados.set(evento.id_actividad, evento);
             } else {
-                // Si ya hay un evento con esta id_actividad, compara el count y actualiza si es mayor
                 const eventoExistente = eventosAgrupados.get(evento.id_actividad);
                 if (evento.count > eventoExistente.count) {
                     eventosAgrupados.set(evento.id_actividad, evento);
@@ -679,15 +674,32 @@ exports.progreso = async (req, res) => {
             }
         }
 
-        // Convierte el mapa en un array de eventos únicos
         const eventosUnicos = Array.from(eventosAgrupados.values());
 
-        res.json(eventosUnicos);
+        // Obtén el título de la actividad para cada evento en el nuevoArray
+        const nuevoArray = await Promise.all(eventosUnicos.map(async (evento) => {
+            const id_actividad = evento.id_actividad;
+            console.log('El id_actividad dentro de progreso es: ', id_actividad);
+            const titulo_actividad = await ActivitiesController.tituloActivity(id_actividad);
+            return {
+                //id_evento: evento.id_evento,
+                count: evento.count,
+                titulo_actividad,
+                score_a: evento.score_a || 0,
+                score_Ea: evento.score_Ea || 0,
+                score_actividad: (evento.score_a + evento.score_Ea)/2 || 0,
+                progreso: evento.progreso || 0
+            };
+        }));
+
+        res.json(nuevoArray);
     } catch (err) {
         console.error(err);
         res.status(500).send('Error del Servidor');
     }
 };
+
+//const ActivitiesController = require('../activities/activities_controller');
 
 
 

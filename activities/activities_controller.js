@@ -316,3 +316,44 @@ exports.loadActivityByMateriaId = async (req, res, next) => {
         res.status(500).send("Server Error");
     }
 };
+
+/*exports.tituloActivity = async (req, res, next) => {
+
+    console.log('Estoy en  titulo Actividad');
+
+    console.log(req.body);
+
+    const activityData = {
+        id_actividad: req.body.id_actividad,
+    };
+
+    console.log('El título de actividad a trabajar es: ', activityData.id_actividad);
+
+    try {
+        const activity = await Activities.findOne({
+            id_actividad: activityData.id_actividad,
+        });
+
+        if (!activity) {
+            return res.status(409).send({ message: "Actividad no encontrada" });
+        }
+
+        const titulo_actividad = activity.titulo_actividad; // Obtén solo el título de la actividad
+
+        res.send({ titulo_actividad }); // Envía el título de la actividad
+    } catch (err) {
+        res.status(500).send("Server Error");
+    }
+};*/
+
+exports.tituloActivity = async (id_actividad) => {
+    try {
+        const activity = await Activities.findOne({ id_actividad });
+        if (!activity) {
+            return null; // Otra indicación de que la actividad no se encontró, por ejemplo, un valor especial como null
+        }
+        return activity.titulo_actividad; // Retorna el título de la actividad
+    } catch (err) {
+        throw new Error("Error del Servidor");
+    }
+};

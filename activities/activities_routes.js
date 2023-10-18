@@ -11,6 +11,7 @@ module.exports=(router)=> {
     router.post('/deleteActivity', Activities.deleteActivity);
     router.post('/loadVideoActivity', Activities.loadURL);
     router.post('/loadActivityMateriaId', Activities.loadActivityByMateriaId);
+    router.post('/tituloActivity', Activities.tituloActivity);
 
 }
 
