@@ -205,7 +205,7 @@ exports.uploadEstudiante = async (req, res, next) => {
 
   try {
       await Estudiante.updateOne({ id_estudiante: estudianteData.id_estudiante }, { $set: estudianteNewData });
-      res.json({ status: 'Información del estudiante actualizada' });
+      res.json({ status: '¡Datos actualizados! Para verificar los cambios cierre sesión y vuelva a ingresar.' });
   } catch (err) {
       res.status(500).send(`Server Error ${err}`);
   }
