@@ -37,16 +37,16 @@ exports.loadContentREA = async (req, res, next) => {
 // Load all the specific elements for content in mongo. 
 
 exports.allContent = async (req, res, next) => {
-    try {
-        const contents = await ContentREA.find();
-        if (!contents) {
-            res.status(409).send({ message: 'No hay contenidos' });
-        } else {
-            res.send(contents);
-        }
-    } catch (err) {
-        res.status(500).send('Server Error');
-    }
+  try {
+      const contents = await ContentREA.find();
+      if (contents.length === 0) {
+          res.status(409).send({ message: 'No hay contenido disponible' });
+      } else {
+          res.send(contents);
+      }
+  } catch (err) {
+      res.status(500).send('Server Error');
+  }
 };
 
 /** @function allContentMovilG */

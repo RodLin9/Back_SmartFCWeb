@@ -75,8 +75,11 @@ exports.createEstudiante = async (req, res, next) => {
     };
 
     const student = await Estudiante.create(newEstudiante);
-    console.log('Estudiante creado exitosamente:', student);
-    res.status(201).json({ student: student });
+    console.log('Estudiante creado exitosamente');
+    res.status(201).json({
+      message: 'Registro exitoso',
+      student: student
+    });
   } catch (err) {
     console.error('Error al crear el estudiante:', err);
     res.status(500).json({ error: 'No se ha podido registrar el estudiante.' });
@@ -100,7 +103,7 @@ exports.loginEstudiante = async (req, res, next) => {
     const student = await Estudiante.findOne({ correo_electronico: estudianteData.correo_electronico });
 
     if (!student) {
-      return res.status(409).send({ message: 'correo_electronico no encontrado' });
+      return res.status(409).send({ message: 'Correo electrónico no encontrado' });
     }
 
     // Verificar la contraseña
@@ -110,8 +113,7 @@ exports.loginEstudiante = async (req, res, next) => {
       req.session.email = student.correo_electronico; // Almacena el nombre de usuario en la sesión
       res.send({ student });
     } else {
-      res.status(409).send(null);
-      console.log('Contraseña incorrecta');
+      res.status(409).send({ message: 'Contraseña incorrecta' });
     }
   } catch (err) {
     res.status(500).send('Server Error');
@@ -174,33 +176,40 @@ exports.loginEstudiante = async (req, res, next) => {
 /** @function uploadEstudiante */
 // Update student in platform.
 
-  exports.uploadEstudiante = async (req, res, next) => {
-    const estudianteData = {
+exports.uploadEstudiante = async (req, res, next) => {
+  const estudianteData = {
       id_estudiante: req.body.id_estudiante
-    }
-    const estudianteNewData = {
+  };
+
+  const estudianteNewData = {
       nombre_estudiante: req.body.nombre_estudiante,
       apellido_estudiante: req.body.apellido_estudiante,
       grado_estudiante: req.body.grado_estudiante,
       curso_estudiante: req.body.curso_estudiante,
-      nombre_usuario: req.body.nombre_usuario,
       contrasena: req.body.contrasena,
-      correo_electronico: req.body.correo_electronico
-    }
+      correo_electronico: req.body.correo_electronico,
+      nombre_usuario: req.body.correo_electronico
+  };
 
-    const datosEstudiante = Object.values(estudianteNewData).filter(value => value !== undefined && value !== null);
+  const datosEstudiante = Object.values(estudianteNewData).filter(value => value !== undefined && value !== null);
 
-    if (datosEstudiante.length === 0) {
+  if (datosEstudiante.length === 0) {
       return res.status(400).send('No se proporcionaron campos para modificar');
-    }
-  
-    try {
+  }
+
+  const existingStudent = await Estudiante.findOne({ correo_electronico: estudianteNewData.correo_electronico });
+
+  if (existingStudent && existingStudent.id_estudiante !== estudianteData.id_estudiante) {
+      return res.status(400).send('Correo electrónico ya registrado');
+  }
+
+  try {
       await Estudiante.updateOne({ id_estudiante: estudianteData.id_estudiante }, { $set: estudianteNewData });
       res.json({ status: 'Información del estudiante actualizada' });
-    } catch (err) {
+  } catch (err) {
       res.status(500).send(`Server Error ${err}`);
-    }
-  };
+  }
+};
 
 /** @function deleteEstudiante */
 // Delete student in platform.
