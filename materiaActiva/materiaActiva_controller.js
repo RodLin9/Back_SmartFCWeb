@@ -93,38 +93,50 @@ exports.allSubjectActivesMovil = async (req, res, next) => {
             id_grado: req.body.id_grado,
             id_colegio: req.body.id_colegio,
         };
-        let activadoSend = 0;
-        const subjectActives = await SubjectActive.find();
 
-        if (!subjectActives) {
-            return res.status(409).send({ message: "No se encontraron materias activas" });
-        } else {
-            activadoSend = 1;
+        // Agregar lean() para obtener datos sin la serialización de Mongoose
+        const subjectActives = await SubjectActive.find().lean();
+
+        if (subjectActives.length === 0) {
+            return res.status(409).send({ message: "No hay materias activas" });
         }
 
-        if (activadoSend === 1) {
-            console.log("Número total de materias activas: " + subjectActives.length);
-            const arrayColegio = [];
-            const arrayFilterFinal = [];
+        const arrayColegio = [];
+        const arrayFilterFinal = [];
 
-            for (let i = 0; i < subjectActives.length; i++) {
-                if (subjectActives[i].id_colegio == studentData.id_colegio) {
-                    arrayColegio.push(subjectActives[i]);
-                }
+        for (let i = 0; i < subjectActives.length; i++) {
+            if (subjectActives[i].id_colegio == studentData.id_colegio) {
+                arrayColegio.push(subjectActives[i]);
             }
-
-            for (let j = 0; j < arrayColegio.length; j++) {
-                if (arrayColegio[j].id_grado == studentData.id_grado) {
-                    arrayFilterFinal.push(arrayColegio[j]);
-                }
-            }
-
-            res.send(arrayFilterFinal);
         }
+
+        for (let j = 0; j < arrayColegio.length; j++) {
+            if (arrayColegio[j].id_grado == studentData.id_grado) {
+                // Realiza la transformación del campo 'url_imagen' aquí
+                const nuevaURLImagen = transformarURLImagen(arrayColegio[j].url_imagen);
+
+                arrayFilterFinal.push({
+                    ...arrayColegio[j],
+                    url_imagen: nuevaURLImagen
+                });
+            }
+        }
+
+        if (arrayFilterFinal.length === 0) {
+            return res.status(409).send({ message: "No hay materias activas" });
+        }
+
+        res.send(arrayFilterFinal);
     } catch (err) {
         res.status(500).send("Server Error");
     }
 };
+
+function transformarURLImagen(url_imagen) {
+    const ipAddress = process.env.IP_ADDRESS_2;
+    const urlSinPrefijo = url_imagen.replace('http://localhost:3000/public/repositorio/', '');
+    return `http://${ipAddress}:3000/repositorio/${urlSinPrefijo}`;
+}
 
 /** @function newLoadSubjectActives */
 // Load all the specific elements for Subject in mongo. 
