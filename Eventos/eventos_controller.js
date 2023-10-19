@@ -1,5 +1,6 @@
 const Eventos = require('./eventos_dao');
 const ActivitiesController = require('../activities/activities_controller');
+
 var async = require('express-async-await')
 const fetch = require('node-fetch');
 
@@ -37,18 +38,17 @@ async function EventoConMayorCount (id_actividad, id_estudiante) {
 };
 
 async function createEventoFunction(id_actividad, id_estudiante) {
-    console.log('Estoy en la función de crear eventos');
     try {
-        // Obtener la fecha y hora actuales
+        // Obtén la fecha y hora actuales
         const fechaActual = new Date();
         const fecha = `${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}`;
         const hora = `${fechaActual.getHours()}:${fechaActual.getMinutes()}:${fechaActual.getSeconds()}`;
 
-        // Obtener el último valor de ID de evento en la base de datos
+        // Obtén el último valor de ID de evento en la base de datos
         const currentCount = await getCurrentEventCount() + 1;
 
+        // Incrementa el contador
         let eventoCounter = 0;
-
         let isUniqueC = false;
         let count = currentCount + 100;
 
@@ -65,7 +65,7 @@ async function createEventoFunction(id_actividad, id_estudiante) {
                 }
             } catch (error) {
                 console.error('Error en el bucle de count:', error);
-                // Maneja el error de alguna otra manera apropiada
+                res.status(500).json({ error: 'Error al crear el evento.' });
             }
         }
 
@@ -86,22 +86,20 @@ async function createEventoFunction(id_actividad, id_estudiante) {
                 }
             } catch (error) {
                 console.error('Error en el bucle de id_evento:', error);
-                // Maneja el error de alguna otra manera apropiada
+                res.status(500).json({ error: 'Error al crear el evento.' });
             }
         }
 
-        console.log('El id_evento es', id_evento);
-
-        // Crear el nuevo evento
+        // Crea un nuevo evento con los valores necesarios
         const newEvento = {
             id_evento: id_evento,
             count: count,
             data_start: fecha,
             hour_start: hora,
-            data_end: null, // Usar la fecha generada anteriormente
-            hour_end: null, // Usar la hora generada anteriormente
-            id_actividad: id_actividad,
-            id_estudiante,
+            data_end: null,
+            hour_end: null,
+            id_actividad: id_actividad, // Usa el id_actividad proporcionado como argumento
+            id_estudiante: id_estudiante, // Usa el id_estudiante proporcionado como argumento
             check_download: 0,
             check_inicio: 1,
             check_fin: 0,
@@ -112,25 +110,33 @@ async function createEventoFunction(id_actividad, id_estudiante) {
             check_a1: "",
             check_a2: "",
             check_a3: "",
-            a_score: 0,
-            Ea_score: 0,
+            score_a: 0,
             check_profile: 0,
             check_Ea1: "",
             check_Ea2: "",
             check_Ea3: "",
-            Ea_score: 0,
+            score_Ea: 0,
             progreso: 0,
             oculto: 0,
         };
 
-        // Crear el nuevo evento usando async/await
         const evento = await Eventos.create(newEvento);
 
-        return evento; // Devolver el evento creado en lugar de enviarlo como respuesta
+        return evento;
     } catch (err) {
         console.error('Error al crear el evento:', err);
-        // Maneja el error de alguna otra manera apropiada
-        return null; // Devuelve null o maneja el error según tus necesidades
+        throw err; // Asegúrate de manejar los errores adecuadamente en el lugar donde llames a esta función
+    }
+}
+
+async function obtenerEventos(id_estudiante) {
+    try {
+        const eventStudents = await Eventos.find({ id_estudiante });
+
+        return eventStudents;
+    } catch (err) {
+        console.error(err);
+        throw new Error('Error al obtener eventos');
     }
 }
 
@@ -477,7 +483,7 @@ exports.uploadEventoActual = async (req, res) => {
         };
 
         // Llama a la función getEventoConMayorCount directamente
-        const eventoMayorCount = await EventoConMayorCount(eventoData.id_actividad, eventoData.id_estudiante);
+        let eventoMayorCount = await EventoConMayorCount(eventoData.id_actividad, eventoData.id_estudiante);
 
         let mensajeRespuesta = '';
 
@@ -603,6 +609,49 @@ exports.uploadEventoActual = async (req, res) => {
                 await eventoMayorCount.save();
 
                 mensajeRespuesta = 'Campos check_profile, hour_end y progreso actualizados correctamente.';
+                break;
+
+            case 8:
+                // Paso 8: Realizar un recorrido por todos los eventos
+                // y actualizar el valor check_inicio o crear un nuevo evento
+
+                console.log('Estoy en el switch paso 8');
+
+                // Obtener todos los eventos del estudiante
+                const eventosEstudiante = await obtenerEventos(eventoData.id_estudiante);
+
+                //console.log('eventosEstudiante:', eventosEstudiante);
+
+                // Inicializa eventoExistente como 0
+                let eventoExistente = 0;
+
+                // Buscar un evento con el mismo id_actividad
+                for (const evento of eventosEstudiante) {
+                    console.log('Comparando evento.id_actividad:', evento.id_actividad, 'con eventoData.id_actividad:', eventoData.id_actividad);
+                
+                    if (parseInt(evento.id_actividad) === parseInt(eventoData.id_actividad)) {
+                        eventoExistente = 1;
+                        break; // Si se encuentra un evento con el mismo id_actividad, sal del bucle
+                    }
+                }
+
+                console.log('eventoExistente: ', eventoExistente);
+
+                if (eventoExistente === 1) {
+                    // Si el evento existe, aumenta check_inicio en 1
+                    eventoMayorCount.check_inicio += 1;
+
+                    // Guarda el evento actualizado
+                    await eventoMayorCount.save();
+
+                    mensajeRespuesta = 'check_inicio incrementado en 1 en el evento existente.';
+                } else {
+                    // Si el evento no existe, crea uno nuevo
+                    eventoMayorCount = await createEventoFunction(eventoData.id_actividad, eventoData.id_estudiante);
+
+                    mensajeRespuesta = 'Se ha creado un nuevo evento con check_inicio en 1.';
+                }
+
                 break;
 
             default:
