@@ -640,7 +640,6 @@ exports.uploadEventoActual = async (req, res) => {
                     // Si el evento existe, aumenta check_inicio en 1
                     eventoMayorCount.check_inicio += 1;
 
-                    // Guarda el evento actualizado
                     await eventoMayorCount.save();
                     console.log('check_inicio incrementado en 1');
                     mensajeRespuesta = 'check_inicio incrementado en 1 en el evento existente.';
