@@ -469,6 +469,8 @@ exports.uploadEventoActual = async (req, res) => {
             id_estudiante: req.body.id_estudiante,
         };
 
+        const comparar = eventoData.id_actividad;
+
         const paso = parseInt(req.body.paso);
 
         const eventoNewData = {
@@ -491,10 +493,10 @@ exports.uploadEventoActual = async (req, res) => {
         const fecha = `${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}`;
         const hora = `${fechaActual.getHours()}:${fechaActual.getMinutes()}:${fechaActual.getSeconds()}`;
 
-        if (!eventoMayorCount) {
+        /*if (!eventoMayorCount) {
             console.log('Estoy en el if de eventoMayorCount')
             eventoMayorCount = await createEventoFunction(eventoData.id_actividad, eventoData.id_estudiante);
-        }
+        }*/
 
         switch (paso) {
             case 1:
@@ -625,13 +627,10 @@ exports.uploadEventoActual = async (req, res) => {
                 // Inicializa eventoExistente como 0
                 let eventoExistente = 0;
 
-                // Buscar un evento con el mismo id_actividad
                 for (const evento of eventosEstudiante) {
-                    console.log('Comparando evento.id_actividad:', evento.id_actividad, 'con eventoData.id_actividad:', eventoData.id_actividad);
-                
-                    if (parseInt(evento.id_actividad) === parseInt(eventoData.id_actividad)) {
+                    if (parseInt(evento.id_actividad) === parseInt(comparar)) {
                         eventoExistente = 1;
-                        break; // Si se encuentra un evento con el mismo id_actividad, sal del bucle
+                        break;
                     }
                 }
 
@@ -643,12 +642,12 @@ exports.uploadEventoActual = async (req, res) => {
 
                     // Guarda el evento actualizado
                     await eventoMayorCount.save();
-
+                    console.log('check_inicio incrementado en 1');
                     mensajeRespuesta = 'check_inicio incrementado en 1 en el evento existente.';
                 } else {
                     // Si el evento no existe, crea uno nuevo
                     eventoMayorCount = await createEventoFunction(eventoData.id_actividad, eventoData.id_estudiante);
-
+                    console.log('Nuevo evento creado');
                     mensajeRespuesta = 'Se ha creado un nuevo evento con check_inicio en 1.';
                 }
 
@@ -675,6 +674,10 @@ exports.loadUltimoEvento = async (req, res) => {
     try {
         const id_actividad = req.body.id_actividad;
         const id_estudiante = req.body.id_estudiante;
+
+        console.log('El id_actividad que llego es', id_actividad);
+        console.log('El id_estudiante que llego es', id_estudiante);
+
 
         const eventos = await Eventos.find({ id_actividad, id_estudiante });
 
