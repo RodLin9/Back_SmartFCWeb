@@ -507,7 +507,7 @@ exports.uploadEventoActual = async (req, res) => {
                 eventoMayorCount.check_video = 1;
                 eventoMayorCount.count_video += 1;
                 if (eventoMayorCount.progreso === 0) {
-                    eventoMayorCount.progreso = 0.333;
+                    eventoMayorCount.progreso = 33;
                 }
 
                 await eventoMayorCount.save();
@@ -550,8 +550,8 @@ exports.uploadEventoActual = async (req, res) => {
                 console.log('Estoy en el switch paso 4');
 
                 eventoMayorCount.check_document = 1;
-                if (eventoMayorCount.progreso === 0.333) {
-                    eventoMayorCount.progreso = 0.666;
+                if (eventoMayorCount.progreso === 33) {
+                    eventoMayorCount.progreso = 66;
                 }
                 eventoMayorCount.data_end = fecha;
                 eventoMayorCount.hour_end = hora;
@@ -590,7 +590,7 @@ exports.uploadEventoActual = async (req, res) => {
                 eventoMayorCount.check_Ea3 = req.body.check_Ea3 || null;
                 eventoMayorCount.score_Ea = req.body.score_Ea || 0;
                 eventoMayorCount.check_fin = 1;
-                eventoMayorCount.progreso = 1;
+                eventoMayorCount.progreso = 100;
                 eventoMayorCount.data_end = fecha;
                 eventoMayorCount.hour_end = hora;
 
