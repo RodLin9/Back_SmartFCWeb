@@ -93,6 +93,10 @@ const eventoSchema = new Schema({
         type:Number,
         trim: true
     },
+    state_a:{
+        type:Number,
+        trim: true
+    },    
     check_profile:{
         type:Number,
         trim: true
@@ -110,6 +114,10 @@ const eventoSchema = new Schema({
         trim: true
     },
     score_Ea:{
+        type:Number,
+        trim: true
+    },
+    state_Ea:{
         type:Number,
         trim: true
     },

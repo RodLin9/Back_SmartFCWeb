@@ -111,11 +111,13 @@ async function createEventoFunction(id_actividad, id_estudiante) {
             check_a2: "",
             check_a3: "",
             score_a: 0,
+            state_a : 0,
             check_profile: 0,
             check_Ea1: "",
             check_Ea2: "",
             check_Ea3: "",
             score_Ea: 0,
+            state_Ea: 0,
             progreso: 0,
             oculto: 0,
         };
@@ -220,11 +222,13 @@ exports.createEvento = async (req, res, next) => {
         check_a2: "",
         check_a3: "",
         score_a: 0,
+        state_a: 0,
         check_profile: 0,
         check_Ea1: "",
         check_Ea2: "",
         check_Ea3: "",
         score_Ea: 0,
+        state_Ea: 0,
         progreso: 0,
         oculto: 0,
       };
@@ -650,6 +654,35 @@ exports.uploadEventoActual = async (req, res) => {
                     mensajeRespuesta = 'Se ha creado un nuevo evento con check_inicio en 1.';
                 }
 
+                break;
+
+            case 9:
+                // Paso 9: Estado para el test
+                // state_a //
+
+                console.log('Estoy en el switch paso 9');
+                if (eventoMayorCount.state_a === 0) {
+                    eventoMayorCount.state_a = 1;
+                    await eventoMayorCount.save();
+                    mensajeRespuesta = 'Recuerda que una vez ingreses al test, debes terminarlo y no podrás realizarlo nuevamente.';
+                } else {
+                    mensajeRespuesta = 'El test ya ha sido respondido.';
+                }
+                break;
+
+            case 10:
+                // Paso 10: Estado para la evaluación
+                // state_Ea //
+
+                console.log('Estoy en el switch paso 10');
+
+                if (eventoMayorCount.state_Ea === 0) {
+                    eventoMayorCount.state_Ea = 1;
+                    await eventoMayorCount.save();
+                    mensajeRespuesta = 'Recuerda que una vez ingreses a la evaluación, debes terminarla y no podrás realizarla nuevamente.';
+                } else {
+                    mensajeRespuesta = 'La evaluación ya ha sido respondida.';
+                }
                 break;
 
             default:
