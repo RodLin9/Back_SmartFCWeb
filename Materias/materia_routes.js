@@ -8,4 +8,6 @@ module.exports=(router)=> {
     router.get('/newLoadSubjects', Subject.newLoadSubjects);
     //router.put('/modifySubject', Subject.modifySubject);
     router.post('/deleteSubject', Subject.deleteSubject);
+    router.post('/getSubjectName', Subject.getSubjectName);
+
 }

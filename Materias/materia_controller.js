@@ -81,3 +81,22 @@ exports.deleteSubject = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+
+exports.getSubjectName = async (req, res, next) => {
+  const subjectData = {
+    id_materia: req.body.id_materia,
+  };
+
+  try {
+    const subject = await Subject.findOne({ id_materia: subjectData.id_materia }, 'nombre_materia');
+
+    if (!subject) {
+      res.status(409).send({ message: "No se encontró la materia" });
+    } else {
+      res.send({ nombre_materia: subject.nombre_materia }); // Devolvemos solo el campo "nombre_materia"
+    }
+  } catch (err) {
+    res.status(500).send("Error del servidor");
+  }
+};
