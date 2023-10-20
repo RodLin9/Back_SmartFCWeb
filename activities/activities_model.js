@@ -1,10 +1,13 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const Question = require('./questions_model');
+
 /** @function activitySchema */
 // Schema in activity for model
-
 const activitySchema = new Schema({
-    id_actividad:{
+
+    questions: [Question.schema],
+    id_actividad: {
         type: Number,
         required: true,
         unique: true,
@@ -115,6 +118,16 @@ const activitySchema = new Schema({
         required: true,
         trim: true
     },
+    id_retrotaller: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    urlretrotaller: {
+        type: String,
+        required: true,
+        trim: true
+    },
     descripcion_test:{
         type: String,
         required: true,
@@ -150,6 +163,11 @@ const activitySchema = new Schema({
         required: true,
         trim: true
     },
+    RQ1: {
+        type: String,
+        required: true,
+        trim: true
+    },
     Q2:{
         type: String,
         required: true,
@@ -177,6 +195,11 @@ const activitySchema = new Schema({
     },
     CA2:{
         type: Number,
+        required: true,
+        trim: true
+    },
+    RQ2: {
+        type: String,
         required: true,
         trim: true
     },
@@ -210,6 +233,11 @@ const activitySchema = new Schema({
         required: true,
         trim: true
     },
+    RQ3: {
+        type: String,
+        required: true,
+        trim: true
+    },
     evaluacion:{
         type: Number,
         required: true,
@@ -217,96 +245,6 @@ const activitySchema = new Schema({
     },
     descripcion_evaluacion:{
         type: String,
-        required: true,
-        trim: true
-    },
-    EQ1:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA11:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA12:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA13:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA14:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    ECA1:{
-        type: Number,
-        required: true,
-        trim: true
-    },
-    EQ2:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA21:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA22:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA23:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA24:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    ECA2:{
-        type: Number,
-        required: true,
-        trim: true
-    },
-    EQ3:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA31:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA32:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA33:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    EA34:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    ECA3:{
-        type: Number,
         required: true,
         trim: true
     },
@@ -319,8 +257,13 @@ const activitySchema = new Schema({
         type: Number,
         required: true,
         trim: true
+    },
+    retroalimentacion: {
+        type: Number,
+        required: true,
+        trim: true
     }
-}, {timestamps: true});
+}, {timestamps: false});
 
 module.exports = activitySchema;
 

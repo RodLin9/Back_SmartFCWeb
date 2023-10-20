@@ -6,7 +6,7 @@ const Activities = require('./activities_dao');
 //TODO: Borrar esto de crear actividad y comentarios
 
 exports.createActivity = async (req, res, next) => {
-    const newActivities = {
+    const newActivity = {
         id_actividad: req.body.id_actividad,
         cont: req.body.cont,
         id_colegio: req.body.id_colegio,
@@ -29,61 +29,24 @@ exports.createActivity = async (req, res, next) => {
         id_taller: req.body.id_taller,
         taller: req.body.taller,
         urltaller: req.body.urltaller,
+        id_retrotaller: req.body.id_retrotaller,
+        urlretrotaller: req.body.urlretrotaller,
         descripcion_test: req.body.descripcion_test,
-        Q1: req.body.Q1,
-        A11: req.body.A11,
-        A12: req.body.A12,
-        A13: req.body.A13,
-        A14: req.body.A14,
-        CA1: req.body.CA1,
-        Q2: req.body.Q2,
-        A21: req.body.A21,
-        A22: req.body.A22,
-        A23: req.body.A23,
-        A24: req.body.A24,
-        CA2: req.body.CA2,
-        Q3: req.body.Q3,
-        A31: req.body.A31,
-        A32: req.body.A32,
-        A33: req.body.A33,
-        A34: req.body.A34,
-        CA3: req.body.CA3,
-        evaluacion: req.body.evaluacion,
-        descripcion_evaluacion: req.body.descripcion_evaluacion,
-        EQ1: req.body.EQ1,
-        EA11: req.body.EA11,
-        EA12: req.body.EA12,
-        EA13: req.body.EA13,
-        EA14: req.body.EA14,
-        ECA1: req.body.ECA1,
-        EQ2: req.body.EQ2,
-        EA21: req.body.EA21,
-        EA22: req.body.EA22,
-        EA23: req.body.EA23,
-        EA24: req.body.EA24,
-        ECA2: req.body.ECA2,
-        EQ3: req.body.EQ3,
-        EA31: req.body.EA31,
-        EA32: req.body.EA32,
-        EA33: req.body.EA33,
-        EA34: req.body.EA34,
-        ECA3: req.body.ECA3,
+        questions: req.body.questions, // Debes incluir el array de preguntas y respuestas aquí
         autor: req.body.autor,
         id_autor: req.body.id_autor
     };
 
     try {
-        const activity = await Activities.create(newActivities);
+        const activity = await Activities.create(newActivity);
         res.send({ activity });
     } catch (err) {
-        console.error(err); // Imprime el error en la consola para facilitar el seguimiento
+        console.error(err);
 
         if (err.name === "ValidationError") {
-            // Manejo de errores de validación de Mongoose
             return res.status(400).json({ message: "Datos de actividad no válidos" });
         }
 
-        // Otros tipos de errores
         res.status(500).json({ message: "Error al crear la actividad" });
     }
 };
@@ -107,15 +70,18 @@ exports.loadActivity = async (req, res, next) => {
     try {
         const activity = await Activities.findOne({
             id_actividad: activityData.id_actividad,
-        });
+        }).lean();
 
         if (!activity) {
             return res.status(409).send({ message: "Actividad no encontrada" });
         }
-        //res.send({ activity });
-        res.send([activity]); // Envía el objeto activity dentro de un array
+
+        // Enviar el objeto activity dentro de un array
+        res.send([activity]);
+
     } catch (err) {
-        res.status(500).send("Server Error");
+        console.error(err);
+        res.status(500).json({ error: "Error al cargar la actividad", details: err.message });
     }
 };
 
@@ -124,13 +90,13 @@ exports.loadActivity = async (req, res, next) => {
 
 exports.allActivities = async (req, res, next) => {
     try {
-        const activities = await Activities.find();
+        const activities = await Activities.find().lean();
 
         if (!activities) {
             return res.status(409).send({ message: "Actividades no encontradas" });
         }
 
-        res.send(activities);
+        res.send(activities); // Asegúrate de que el campo 'questions' se incluya en la respuesta
     } catch (err) {
         res.status(500).send("Server Error");
     }
@@ -299,10 +265,10 @@ exports.loadActivityByMateriaId = async (req, res, next) => {
     try {
         const activities = await Activities.find({
             id_materiaActiva: activityData.id_materiaActiva,
-        });
+        }).lean();
 
         if (!activities || activities.length === 0) {
-            return res.status(409).send({ message: "No se encontraron actividades por id_materiaActiva" });
+            return res.status(409).send({ message: "¡No tienes actividades disponibles para esta materia!" });
         }
 
         // Enviar todas las actividades en un solo array, sin anidamiento
@@ -316,35 +282,6 @@ exports.loadActivityByMateriaId = async (req, res, next) => {
         res.status(500).send("Server Error");
     }
 };
-
-/*exports.tituloActivity = async (req, res, next) => {
-
-    console.log('Estoy en  titulo Actividad');
-
-    console.log(req.body);
-
-    const activityData = {
-        id_actividad: req.body.id_actividad,
-    };
-
-    console.log('El título de actividad a trabajar es: ', activityData.id_actividad);
-
-    try {
-        const activity = await Activities.findOne({
-            id_actividad: activityData.id_actividad,
-        });
-
-        if (!activity) {
-            return res.status(409).send({ message: "Actividad no encontrada" });
-        }
-
-        const titulo_actividad = activity.titulo_actividad; // Obtén solo el título de la actividad
-
-        res.send({ titulo_actividad }); // Envía el título de la actividad
-    } catch (err) {
-        res.status(500).send("Server Error");
-    }
-};*/
 
 exports.tituloActivity = async (id_actividad) => {
     try {
