@@ -92,6 +92,7 @@ async function createEventoFunction(id_actividad, id_estudiante) {
 
         // Crea un nuevo evento con los valores necesarios
         const newEvento = {
+            answers: [],
             id_evento: id_evento,
             count: count,
             data_start: fecha,
@@ -113,9 +114,9 @@ async function createEventoFunction(id_actividad, id_estudiante) {
             score_a: 0,
             state_a : 0,
             check_profile: 0,
-            check_Ea1: "",
+            /*check_Ea1: "",
             check_Ea2: "",
-            check_Ea3: "",
+            check_Ea3: "",*/
             score_Ea: 0,
             state_Ea: 0,
             progreso: 0,
@@ -127,7 +128,7 @@ async function createEventoFunction(id_actividad, id_estudiante) {
         return evento;
     } catch (err) {
         console.error('Error al crear el evento:', err);
-        throw err; // Asegúrate de manejar los errores adecuadamente en el lugar donde llames a esta función
+        throw err;
     }
 }
 
@@ -476,7 +477,6 @@ exports.uploadEventoActual = async (req, res) => {
         const comparar = eventoData.id_actividad;
 
         const paso = parseInt(req.body.paso);
-
         const eventoNewData = {
             check_a1: req.body.check_a1,
             check_a2: req.body.check_a2,
@@ -485,8 +485,9 @@ exports.uploadEventoActual = async (req, res) => {
             check_Ea1: req.body.check_Ea1,
             check_Ea2: req.body.check_Ea2,
             check_Ea3: req.body.check_Ea3,
-            score_Ea: req.body.score_Ea
-        };
+            score_Ea: req.body.score_Ea,
+            answers: [],
+        };
 
         // Llama a la función getEventoConMayorCount directamente
         let eventoMayorCount = await EventoConMayorCount(eventoData.id_actividad, eventoData.id_estudiante);
@@ -511,7 +512,7 @@ exports.uploadEventoActual = async (req, res) => {
                 eventoMayorCount.check_video = 1;
                 eventoMayorCount.count_video += 1;
                 if (eventoMayorCount.progreso === 0) {
-                    eventoMayorCount.progreso = 33;
+                    eventoMayorCount.progreso = 0.33;
                 }
 
                 await eventoMayorCount.save();
@@ -554,8 +555,8 @@ exports.uploadEventoActual = async (req, res) => {
                 console.log('Estoy en el switch paso 4');
 
                 eventoMayorCount.check_document = 1;
-                if (eventoMayorCount.progreso === 33) {
-                    eventoMayorCount.progreso = 66;
+                if (eventoMayorCount.progreso === 0.33) {
+                    eventoMayorCount.progreso = 0.66;
                 }
                 eventoMayorCount.data_end = fecha;
                 eventoMayorCount.hour_end = hora;
@@ -589,18 +590,32 @@ exports.uploadEventoActual = async (req, res) => {
 
                 console.log('Estoy en el switch paso 6');
 
-                eventoMayorCount.check_Ea1 = req.body.check_Ea1 || null;
-                eventoMayorCount.check_Ea2 = req.body.check_Ea2 || null;
-                eventoMayorCount.check_Ea3 = req.body.check_Ea3 || null;
+                const answers = req.body.answers || []; // Cambiar el nombre de 'respuestas' a 'answers'
+                console.log("El array de answer recibido es: ", answers);
+
+                if (answers.length === 0) {
+                    mensajeRespuesta = 'No se han proporcionado respuestas para actualizar.';
+                } else {
+                    // Convierte el array de respuestas en cadenas JSON
+                    const answersJSON = answers.map(respuesta => JSON.stringify(respuesta));
+
+                    // Actualiza el campo 'answers' en el evento
+                    eventoMayorCount.answers = answersJSON;
+                    eventoMayorCount.progreso = 1; // Puedes ajustar el progreso según tu lógica
+
+                    await eventoMayorCount.save();
+
+                    mensajeRespuesta = 'Respuestas actualizadas correctamente.';
+                }
+
                 eventoMayorCount.score_Ea = req.body.score_Ea || 0;
                 eventoMayorCount.check_fin = 1;
-                eventoMayorCount.progreso = 100;
+                eventoMayorCount.progreso = 1;
                 eventoMayorCount.data_end = fecha;
                 eventoMayorCount.hour_end = hora;
 
                 await eventoMayorCount.save();
 
-                mensajeRespuesta = 'Campos check_fin, score_Ea, progreso, check_Ea1, check_Ea2 y check_Ea3 actualizados correctamente.';
                 break;
 
             case 7:

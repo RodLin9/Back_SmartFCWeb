@@ -10,6 +10,13 @@ const Schema = mongoose.Schema;
 // Schema in events for model
 
 const eventoSchema = new Schema({
+
+    answers: [
+        {
+            type: Object, // Cambiar el tipo a Object para permitir claves y valores de cadenas
+            required: false, // Puedes ajustar los requisitos según tu lógica de negocio
+        },
+    ],
     id_evento:{
         type: mongoose.Schema.Types.Long, //Se esperan números muy grandes
         required: true,
@@ -24,7 +31,7 @@ const eventoSchema = new Schema({
         unique: true
     },
     data_start:{
-        type: String, //FIX: Usar el tipo de datos Date en lugar de String. Date proporcionan una funcionalidad más robusta para trabajar con fechas y horas.
+        type: String,
         trim: true
     },
     hour_start:{
@@ -101,7 +108,7 @@ const eventoSchema = new Schema({
         type:Number,
         trim: true
     },
-    check_Ea1:{
+    /*check_Ea1:{
         type:Number,
         trim: true
     },
@@ -112,7 +119,7 @@ const eventoSchema = new Schema({
     check_Ea3:{
         type:Number,
         trim: true
-    },
+    },*/
     score_Ea:{
         type:Number,
         trim: true
