@@ -112,13 +112,13 @@ async function createEventoFunction(id_actividad, id_estudiante) {
             check_a2: "",
             check_a3: "",
             score_a: 0,
-            state_a : 0,
+            //state_a : 0,
             check_profile: 0,
             /*check_Ea1: "",
             check_Ea2: "",
             check_Ea3: "",*/
             score_Ea: 0,
-            state_Ea: 0,
+            //state_Ea: 0,
             progreso: 0,
             oculto: 0,
         };
@@ -223,13 +223,13 @@ exports.createEvento = async (req, res, next) => {
         check_a2: "",
         check_a3: "",
         score_a: 0,
-        state_a: 0,
+        //state_a: 0,
         check_profile: 0,
         check_Ea1: "",
         check_Ea2: "",
         check_Ea3: "",
         score_Ea: 0,
-        state_Ea: 0,
+        //state_Ea: 0,
         progreso: 0,
         oculto: 0,
       };
@@ -575,7 +575,7 @@ exports.uploadEventoActual = async (req, res) => {
                 eventoMayorCount.check_a1 = req.body.check_a1 || null;
                 eventoMayorCount.check_a2 = req.body.check_a2 || null;
                 eventoMayorCount.check_a3 = req.body.check_a3 || null;
-                eventoMayorCount.score_a = req.body.score_a || 0;
+                eventoMayorCount.score_a = parseFloat(req.body.score_a).toFixed(2) || "0.00";
                 eventoMayorCount.data_end = fecha;
                 eventoMayorCount.hour_end = hora;
 
@@ -608,7 +608,14 @@ exports.uploadEventoActual = async (req, res) => {
                     mensajeRespuesta = 'Respuestas actualizadas correctamente.';
                 }
 
-                eventoMayorCount.score_Ea = req.body.score_Ea || 0;
+                const scoreEa = parseFloat(req.body.score_Ea);
+                if (!isNaN(scoreEa)) {
+                    eventoMayorCount.score_Ea = scoreEa.toFixed(2);
+                } else {
+                    console.log('El score_Ea viene mal');
+                    eventoMayorCount.score_Ea = "0.00";
+                }
+
                 eventoMayorCount.check_fin = 1;
                 eventoMayorCount.progreso = 1;
                 eventoMayorCount.data_end = fecha;
@@ -671,7 +678,7 @@ exports.uploadEventoActual = async (req, res) => {
 
                 break;
 
-            case 9:
+            /*case 9:
                 // Paso 9: Estado para el test
                 // state_a //
 
@@ -683,9 +690,9 @@ exports.uploadEventoActual = async (req, res) => {
                 } else {
                     mensajeRespuesta = 'El test ya ha sido respondido.';
                 }
-                break;
+                break;*/
 
-            case 10:
+            /*case 10:
                 // Paso 10: Estado para la evaluación
                 // state_Ea //
 
@@ -698,7 +705,7 @@ exports.uploadEventoActual = async (req, res) => {
                 } else {
                     mensajeRespuesta = 'La evaluación ya ha sido respondida.';
                 }
-                break;
+                break;*/
 
             default:
                 mensajeRespuesta = 'Paso diferente a los registrados, no se realizó ninguna actualización :D';
@@ -786,7 +793,7 @@ exports.progreso = async (req, res) => {
                 titulo_actividad,
                 score_a: evento.score_a || 0,
                 score_Ea: evento.score_Ea || 0,
-                score_actividad: (evento.score_a + evento.score_Ea)/2 || 0,
+                score_actividad: parseFloat(((evento.score_a + evento.score_Ea) / 2).toFixed(2)) || 0,
                 progreso: evento.progreso || 0
             };
         }));

@@ -13,8 +13,8 @@ const eventoSchema = new Schema({
 
     answers: [
         {
-            type: Object, // Cambiar el tipo a Object para permitir claves y valores de cadenas
-            required: false, // Puedes ajustar los requisitos según tu lógica de negocio
+            type: Object,
+            required: false,
         },
     ],
     id_evento:{
@@ -100,10 +100,10 @@ const eventoSchema = new Schema({
         type:Number,
         trim: true
     },
-    state_a:{
+    /*state_a:{
         type:Number,
         trim: true
-    },    
+    },*/    
     check_profile:{
         type:Number,
         trim: true
@@ -124,10 +124,10 @@ const eventoSchema = new Schema({
         type:Number,
         trim: true
     },
-    state_Ea:{
+    /*state_Ea:{
         type:Number,
         trim: true
-    },
+    },*/
     progreso:{ //Esto?
         type:Number,
         trim: true
