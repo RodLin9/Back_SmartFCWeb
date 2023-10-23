@@ -124,10 +124,10 @@ const eventoSchema = new Schema({
         type:Number,
         trim: true
     },
-    /*state_Ea:{
+    check_Ea:{
         type:Number,
         trim: true
-    },*/
+    },
     progreso:{ //Esto?
         type:Number,
         trim: true

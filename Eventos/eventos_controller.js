@@ -118,7 +118,7 @@ async function createEventoFunction(id_actividad, id_estudiante) {
             check_Ea2: "",
             check_Ea3: "",*/
             score_Ea: 0,
-            //state_Ea: 0,
+            check_Ea: 0,
             progreso: 0,
             oculto: 0,
         };
@@ -143,147 +143,6 @@ async function obtenerEventos(id_estudiante) {
     }
 }
 
-/** @function createEvento */
-// Create the specific elements for Eventos in mongo.
-
-exports.createEvento = async (req, res, next) => {
-    try {
-        //console.log('Se crea el evento');
-        const fechaActual = new Date();
-        const fecha = `${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}`;
-        const hora = `${fechaActual.getHours()}:${fechaActual.getMinutes()}:${fechaActual.getSeconds()}`;
-        const id_estudiante = req.body.id_estudiante;
-        
-        // Obtener el último valor de ID de evento en la base de datos
-        const currentCount = await getCurrentEventCount() + 1;
-        
-        // Incrementar el contador
-        let eventoCounter = 0;
-        
-        let isUniqueC = false;
-        let count = currentCount + 100;
-        
-        while (!isUniqueC) {
-            try {
-                // Consultar si ya existe un evento con el mismo valor de count
-                const existingCount = await Eventos.findOne({ count: count });
-
-                if (existingCount) {
-                    eventoCounter++;
-                    count = currentCount + eventoCounter;
-                } else {
-                    isUniqueC = true;
-                }
-            } catch (error) {
-                console.error('Error en el bucle de count:', error);
-                res.status(500).json({ error: 'Error al crear el evento.' });
-            }
-        }
-
-        let isUnique = false;
-        let id_evento = `${id_estudiante}${count}`;
-
-        while (!isUnique) {
-            try {
-                // Consultar si ya existe un evento con el mismo id_evento
-                const existingEvento = await Eventos.findOne({ id_evento: id_evento });
-
-                if (existingEvento) {
-                    eventoCounter++; // Si el id_evento ya existe, incrementa eventoCounter y vuelve a intentar
-                    id_evento = `${id_estudiante}${count + eventoCounter}`;
-                } else {
-                    id_evento = `${id_evento}${currentCount}`;
-                    isUnique = true;
-                }
-            } catch (error) {
-                console.error('Error en el bucle de id_evento:', error);
-                res.status(500).json({ error: 'Error al crear el evento.' });
-            }
-        }
-  
-      console.log('El id_evento es', id_evento);
-  
-      const newEvento = {
-        id_evento: id_evento,
-        count: count,
-        data_start: fecha,
-        hour_start: hora,
-        data_end: req.body.data_end,
-        hour_end: req.body.hour_end,
-        id_actividad: req.body.id_actividad,
-        id_estudiante: id_estudiante,
-        check_download: 0,
-        check_inicio: 1,
-        check_fin: 0,
-        check_answer: null,
-        count_video: 0,
-        check_video: null,
-        check_document: null,
-        check_a1: "",
-        check_a2: "",
-        check_a3: "",
-        score_a: 0,
-        //state_a: 0,
-        check_profile: 0,
-        check_Ea1: "",
-        check_Ea2: "",
-        check_Ea3: "",
-        score_Ea: 0,
-        //state_Ea: 0,
-        progreso: 0,
-        oculto: 0,
-      };
-  
-      const evento = await Eventos.create(newEvento);
-      
-      res.send(evento);
-      
-    } catch (err) {
-      console.error('Error al crear el evento:', err);
-      res.status(500).json({ error: 'No se ha podido registrar el evento.' });
-    }
-  };
-
-/** @function loadEvento */
-// Load the specific elements for Eventos in mongo.
-
-exports.loadEvento = async (req, res, next) => {
-    try {
-        const eventoData = {
-            id_estudiante: req.body.id_estudiante,
-        };
-
-        const evento = await Eventos.findOne({ id_estudiante: eventoData.id_estudiante });
-
-        if (evento){
-            const idEventoNumerico = evento.id_evento;
-            //console.log('El id numerico es: ' + idEventoNumerico);
-            //console.log('El id de evento es: ' + evento.id_evento);
-            console.log(evento);
-        } else {
-            return res.status(404).send({ message: 'Evento no encontrado :(' });
-        }
-
-        res.send(evento);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-};
-exports.allEventos = async (req, res, next) => {
-    try {
-        const eventStudents = await Eventos.find();
-
-        if (!eventStudents || eventStudents.length === 0) {
-            return res.status(404).send({ message: 'No se encontraron eventos' });
-        }
-
-        res.send(eventStudents);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-};
 
 /** @function allEventsForAngular */
 // Load all the specific elements for Eventos in mongo. 
@@ -347,29 +206,6 @@ exports.allEventsForAngular = async (req, res, next) => {
         }
     } catch (err) {
         // Maneja errores y envía una respuesta de error del servidor
-        res.status(500).send('Server Error');
-    }
-}
-
-/** @function generateMetrics */
-// Generate metrics for specific elements of Eventos in MongoDB.
-
-exports.generateMetrics = async (req, res, next) => {
-    try {
-        const contentData = {
-            id_estudiante: req.body.id_estudiante,
-        };
-
-        const eventsMetrics = await Eventos.find({ id_estudiante: contentData.id_estudiante });
-
-        if (!eventsMetrics || eventsMetrics.length === 0) {
-            return res.status(409).send({ message: 'Something Error' });
-        } else {
-            var dataEvents = eventsMetrics;
-            console.log(dataEvents);
-            res.send(dataEvents);
-        }
-    } catch (err) {
         res.status(500).send('Server Error');
     }
 }
@@ -445,24 +281,6 @@ exports.uploadEstadoEvento = async (req, res) => {
         res.status(500).send('Error del Servidor');
     }
 };
-
-exports.deleteEvento = async (req, res, next) => {
-    try {
-      const idEvento = req.params.id;
-  
-      const eventoEliminado = await Eventos.findOneAndDelete({ id_evento: idEvento });
-  
-      if (!eventoEliminado) {
-        return res.status(404).send({ message: 'Evento no encontrado' });
-      }
-  
-      res.send({ message: 'Evento eliminado exitosamente :D', evento: eventoEliminado });
-    } catch (error) {
-      // Maneja cualquier error que ocurra durante la eliminación.
-      console.error('Error al eliminar el evento :( :', error);
-      return res.status(500).send('Server Error');
-    }
-  };
 
   /** @function uploadEventoActual */
 // Upload specific elements for Eventos in MongoDB.
@@ -692,20 +510,20 @@ exports.uploadEventoActual = async (req, res) => {
                 }
                 break;*/
 
-            /*case 10:
+            case 9:
                 // Paso 10: Estado para la evaluación
                 // state_Ea //
 
                 console.log('Estoy en el switch paso 10');
 
-                if (eventoMayorCount.state_Ea === 0) {
-                    eventoMayorCount.state_Ea = 1;
+                if (eventoMayorCount.check_Ea === 0) {
+                    eventoMayorCount.check_Ea = 1;
                     await eventoMayorCount.save();
                     mensajeRespuesta = 'Recuerda que una vez ingreses a la evaluación, debes terminarla y no podrás realizarla nuevamente.';
                 } else {
                     mensajeRespuesta = 'La evaluación ya ha sido respondida.';
                 }
-                break;*/
+                break;
 
             default:
                 mensajeRespuesta = 'Paso diferente a los registrados, no se realizó ninguna actualización :D';
