@@ -242,6 +242,7 @@ exports.uploadEvento = async (req, res) => {
             check_Ea2: req.body.check_Ea2,
             check_Ea3: req.body.check_Ea3,
             Ea_score: req.body.Ea_score,
+            check_Ea: req.body.check_Ea,
             oculto: req.body.oculto
         };
 
@@ -482,9 +483,9 @@ exports.uploadEventoActual = async (req, res) => {
 
                 if (eventoExistente === 1) {
                     // Si el evento existe, aumenta check_inicio en 1
-                    eventoMayorCount.check_inicio += 1;
+                   // eventoMayorCount.check_inicio += 1;
 
-                    await eventoMayorCount.save();
+                    //await eventoMayorCount.save();
                     console.log('check_inicio incrementado en 1');
                     mensajeRespuesta = 'check_inicio incrementado en 1 en el evento existente.';
                 } else {
@@ -512,7 +513,7 @@ exports.uploadEventoActual = async (req, res) => {
 
             case 9:
                 // Paso 10: Estado para la evaluación
-                // state_Ea //
+                // check_Ea //
 
                 console.log('Estoy en el switch paso 10');
 
@@ -547,14 +548,15 @@ exports.loadUltimoEvento = async (req, res) => {
         const id_actividad = req.body.id_actividad;
         const id_estudiante = req.body.id_estudiante;
 
-        console.log('El id_actividad que llego es', id_actividad);
-        console.log('El id_estudiante que llego es', id_estudiante);
-
+        console.log('El id_actividad que llegó es', id_actividad);
+        console.log('El id_estudiante que llegó es', id_estudiante);
 
         const eventos = await Eventos.find({ id_actividad, id_estudiante });
 
         if (!eventos || eventos.length === 0) {
-            return res.status(404).json({ mensaje: 'No se encontraron eventos para esta actividad y estudiante' });
+            eventoMayorCount = await createEventoFunction(id_actividad, id_estudiante);
+            console.log('Nuevo evento creado desde loadUltimoEvento');
+            //return res.status(404).json({ mensaje: 'No se encontraron eventos para esta actividad y estudiante' });
         }
 
         // Encuentra el evento con el valor de 'count' más alto
