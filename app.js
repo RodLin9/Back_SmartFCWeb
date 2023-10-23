@@ -114,21 +114,30 @@ app.listen(port, () =>{
 
   router.get('/pruebaServidor', (req, res) => {
     const timeoutMillis = 5000; // 5 segundos
+    const { ipAddress } = req.params;
   
     const timeoutId = setTimeout(() => {
+      // Si el tiempo de espera se agota, se ejecutará esta función.
       res.status(500).json({ error: 'La solicitud ha excedido el tiempo límite' });
     }, timeoutMillis);
-
+  
+    // Realiza tu lógica de la solicitud aquí (por ejemplo, consulta una base de datos, realiza operaciones, etc.).
+    // Cuando la lógica esté completa o se produzca un error, elimina el temporizador de tiempo de espera.
+    // Por ejemplo, si se completa la solicitud sin exceder el tiempo límite:
+  
+    // Elimina el temporizador de tiempo de espera.
     clearTimeout(timeoutId);
+
+    process.env.IP_ADDRESS_2 = ipAddress; //La dirección ip del servidor local
   
     res.status(200).json({
       'url': 'prueba'
     });
   });
 
-router.get('/pruebaServidor',(req, res)=>{
+router.get('/pruebaServidor', (req, res) => {
   res.json({
-      'url': `prueba`
+    'url': `prueba`
   });
 });
 
